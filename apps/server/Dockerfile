@@ -9,7 +9,7 @@ RUN npm install -g turbo
 
 COPY . .
 
-RUN turbo prune --scope=client --docker
+RUN turbo prune --scope=server --docker
 
 FROM base as installer
 WORKDIR /app
@@ -27,14 +27,7 @@ RUN pnpm install
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
-# Uncomment and use build args to enable remote caching
-# ARG TURBO_TEAM
-# ENV TURBO_TEAM=$TURBO_TEAM
-
-# ARG TURBO_TOKEN
-# ENV TURBO_TOKEN=$TURBO_TOKEN
-
-RUN turbo run build --filter=client...
+RUN turbo run build --filter=server...
 
 FROM base AS runner
 WORKDIR /app
@@ -42,14 +35,10 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Don't run production as root
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 reactjs
+RUN addgroup --system --gid 1001 expressjs
+RUN adduser --system --uid 1001 expressjs
 
+USER expressjs
 COPY --from=installer /app .
 
-# Fix permissions for the entire /app directory
-RUN chown -R reactjs:nodejs /app
-
-USER reactjs
-
-CMD pnpm --filter client run start
+CMD pnpm --filter server run start
