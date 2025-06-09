@@ -3,26 +3,42 @@ services:
     build:
       context: .
       dockerfile: apps/server/Dockerfile
-
     ports:
-      - "3000:3000"
+      - "8080:3000"
     environment:
       - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
+    env_file:
+      - apps/server/.env
     networks:
       - app-network
+    depends_on:
+      - mongodb
 
   client:
     build:
       context: .
       dockerfile: apps/client/Dockerfile
-
     ports:
-      - "5173:5173"
+      - "5173:3000"
     environment:
       - NODE_ENV=production
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo:8
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db1
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mongodb_data:
