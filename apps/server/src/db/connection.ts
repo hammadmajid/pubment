@@ -1,4 +1,5 @@
 import { type Db, MongoClient } from 'mongodb';
+import { config } from '../config.ts';
 
 class DatabaseConnection {
   private client: MongoClient | null = null;
@@ -9,9 +10,11 @@ class DatabaseConnection {
       const uri = this.getMongoUri();
 
       this.client = new MongoClient(uri, {
-        ssl: process.env.NODE_ENV === 'production',
+        ssl: config.isProduction,
         retryWrites: true,
-        w: 'majority',
+        writeConcern: {
+          w: 'majority',
+        },
       });
 
       await this.client.connect();
@@ -28,7 +31,7 @@ class DatabaseConnection {
   }
 
   private getMongoUri(): string {
-    const uri = process.env.MONGODB_URI;
+    const uri = config.mongoUri;
     if (!uri) {
       throw new Error('MONGODB_URI environment variable is required');
     }
