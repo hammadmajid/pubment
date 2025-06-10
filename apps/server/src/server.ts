@@ -1,15 +1,6 @@
-import express from 'express';
+import app from './app.ts';
 import { config } from './config.ts';
 import dbConnection from './db/connection';
-
-const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
 
 async function startServer() {
   try {
