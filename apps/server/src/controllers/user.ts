@@ -2,7 +2,11 @@ import { Router, type Router as RouterType } from 'express';
 import { ZodError } from 'zod';
 import { User } from '../models';
 import { loginSchema, registrationSchema } from '../schemas/user';
-import { generateSalt, hashPassword } from '../utils/crypto.ts';
+import {
+  comparePassword,
+  generateSalt,
+  hashPassword,
+} from '../utils/crypto.ts';
 
 const router: RouterType = Router();
 
@@ -97,6 +101,64 @@ router.post('/register', async (req, res) => {
     });
     return;
   }
+});
+
+router.post('/login', async (req, res) => {
+  try {
+    const validationResult = loginSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(
+        (err) => `${err.path.join('.')}: ${err.message}`,
+      );
+
+      res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors,
+      });
+      return;
+    }
+
+    const { username, password } = validationResult.data;
+
+    const user = await User.findOne({
+      $or: [{ username: username }],
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+      return;
+    }
+
+    if (await comparePassword(password, user.salt, user.password)) {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+      return;
+    }
+
+    const userResponse = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      name: user.name,
+      bio: user.bio,
+      profilePicture: user.profilePicture,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    res.status(201).json({
+      success: true,
+      message: 'User logged in successfully',
+      user: userResponse,
+    });
+  } catch (error) {}
 });
 
 export default router;

@@ -16,3 +16,16 @@ export const hashPassword = async (
     });
   });
 };
+
+export const comparePassword = async (
+  inputPassword: string,
+  salt: string,
+  hashedPassword: string,
+): Promise<boolean> => {
+  const inputHashedPassword = await hashPassword(inputPassword, salt);
+
+  return crypto.timingSafeEqual(
+    Buffer.from(inputHashedPassword, 'hex'),
+    Buffer.from(hashedPassword, 'hex'),
+  );
+};
