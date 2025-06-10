@@ -7,6 +7,7 @@ import {
   generateSalt,
   hashPassword,
 } from '../utils/crypto.ts';
+import { generateToken } from '../utils/jwt';
 
 const router: RouterType = Router();
 
@@ -58,22 +59,22 @@ router.post('/register', async (req, res) => {
     // Save user to a database
     const savedUser = await newUser.save();
 
-    // Return success response (excluding password)
-    const userResponse = {
-      id: savedUser._id,
-      username: savedUser.username,
-      email: savedUser.email,
-      name: savedUser.name,
-      bio: savedUser.bio,
-      profilePicture: savedUser.profilePicture,
-      createdAt: savedUser.createdAt,
-      updatedAt: savedUser.updatedAt,
-    };
+    // Generate JWT token
+    const token = generateToken(savedUser);
 
+    // Set token as an HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    // Return success response with token and user data
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
-      user: userResponse,
+      token: token, // Include token in the response body for non-browser clients
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -134,7 +135,7 @@ router.post('/login', async (req, res) => {
       return;
     }
 
-    if (await comparePassword(password, user.salt, user.password)) {
+    if (!(await comparePassword(password, user.salt, user.password))) {
       res.status(401).json({
         success: false,
         message: 'Invalid credentials',
@@ -142,23 +143,40 @@ router.post('/login', async (req, res) => {
       return;
     }
 
-    const userResponse = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      name: user.name,
-      bio: user.bio,
-      profilePicture: user.profilePicture,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    // Generate JWT token
+    const token = generateToken(user);
 
-    res.status(201).json({
+    // Set token as an HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    // Return success response with token and user data
+    res.status(200).json({
       success: true,
       message: 'User logged in successfully',
-      user: userResponse,
+      token: token, // Include token in the response body for non-browser clients
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error('Login error:', error);
+
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: Object.values(error.errors.map((err) => err.message)).join(),
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
 });
 
 export default router;
