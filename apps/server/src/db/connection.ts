@@ -1,31 +1,54 @@
-import { type Db, MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 import { config } from '../config.ts';
 
 class DatabaseConnection {
-  private client: MongoClient | null = null;
-  private db: Db | null = null;
+  private isConnected = false;
 
   async connect(): Promise<void> {
     try {
+      if (this.isConnected) {
+        console.log('Already connected to MongoDB');
+        return;
+      }
+
       const uri = this.getMongoUri();
 
-      this.client = new MongoClient(uri, {
+      const options = {
         ssl: config.isProduction,
         retryWrites: true,
         writeConcern: {
-          w: 'majority',
+          w: 'majority' as const,
         },
+        // Additional Mongoose-specific options
+        maxPoolSize: 10, // Maintain up to 10 socket connections
+        serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+        bufferCommands: false, // Disable mongoose buffering
+      };
+
+      await mongoose.connect(uri, options);
+
+      this.isConnected = true;
+      console.log('Connected to MongoDB successfully with Mongoose');
+
+      // Handle connection events
+      mongoose.connection.on('error', (error) => {
+        console.error('MongoDB connection error:', error);
+        this.isConnected = false;
       });
 
-      await this.client.connect();
+      mongoose.connection.on('disconnected', () => {
+        console.log('MongoDB disconnected');
+        this.isConnected = false;
+      });
 
-      // Extract database name from URI
-      const dbName = this.extractDbName(uri);
-      this.db = this.client.db(dbName);
-
-      console.log('Connected to MongoDB successfully');
+      mongoose.connection.on('reconnected', () => {
+        console.log('MongoDB reconnected');
+        this.isConnected = true;
+      });
     } catch (error) {
       console.error('MongoDB connection error:', error);
+      this.isConnected = false;
       throw error;
     }
   }
@@ -38,32 +61,37 @@ class DatabaseConnection {
     return uri;
   }
 
-  private extractDbName(uri: string): string {
-    const dbName = uri.split('/').pop()?.split('?')[0];
-    return dbName || 'myapp';
-  }
-
   async disconnect(): Promise<void> {
-    if (this.client) {
-      await this.client.close();
-      this.client = null;
-      this.db = null;
+    if (this.isConnected) {
+      await mongoose.disconnect();
+      this.isConnected = false;
       console.log('Disconnected from MongoDB');
     }
   }
 
-  getDb(): Db {
-    if (!this.db) {
+  getConnection(): typeof mongoose.connection {
+    if (!this.isConnected) {
       throw new Error('Database not connected. Call connect() first.');
     }
-    return this.db;
+    return mongoose.connection;
   }
 
-  getClient(): MongoClient {
-    if (!this.client) {
+  getMongoose(): typeof mongoose {
+    if (!this.isConnected) {
       throw new Error('Database not connected. Call connect() first.');
     }
-    return this.client;
+    return mongoose;
+  }
+
+  isDbConnected(): boolean {
+    return this.isConnected && mongoose.connection.readyState === 1;
+  }
+
+  getDatabaseName(): string {
+    if (!this.isConnected) {
+      throw new Error('Database not connected. Call connect() first.');
+    }
+    return mongoose.connection.db?.databaseName || 'unknown';
   }
 }
 
