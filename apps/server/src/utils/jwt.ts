@@ -27,7 +27,7 @@ export const generateToken = (user: IUser): string => {
  */
 export const verifyToken = (token: string): jwt.JwtPayload | null => {
   try {
-    return jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
+    return jwt.verify(token, config.jwtSecret) as jwt.JwtPayload;
   } catch (error) {
     return null;
   }
