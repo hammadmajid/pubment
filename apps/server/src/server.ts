@@ -1,6 +1,6 @@
 import app from './app.ts';
 import { config } from './config.ts';
-import dbConnection from './db/connection';
+import dbConnection from './db.ts';
 
 async function startServer() {
   try {
