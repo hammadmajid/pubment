@@ -3,8 +3,11 @@ import postController from '../controllers/postController.ts';
 
 const router: RouterType = Router();
 
+router.get('/', postController.getAll);
 router.get('/:id', postController.getById);
-router.get('/all', postController.getAll);
 router.post('/create', postController.create);
+
+router.post('/:postId/like', postController.toggleLike);
+router.get('/:postId/likes', postController.getLikes);
 
 export default router;

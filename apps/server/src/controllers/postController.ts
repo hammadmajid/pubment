@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { ZodError } from 'zod';
-import { Post } from '../models';
+import { type IPost, Post } from '../models';
 import { postSchema } from '../schemas/postSchema';
 
 const postController = {
@@ -188,6 +188,156 @@ const postController = {
       });
     } catch (error) {
       console.error('Get post by ID error:', error);
+      next(error);
+    }
+  },
+
+  toggleLike: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { postId } = req.params;
+      const userId = req.user?.id;
+
+      // Validate user is authenticated
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required',
+        });
+        return;
+      }
+
+      // Validate post ID format
+      if (!postId || !Types.ObjectId.isValid(postId)) {
+        res.status(400).json({
+          success: false,
+          message: 'Invalid post ID format',
+        });
+        return;
+      }
+
+      // Find the post
+      const post: IPost | null = await Post.findById(postId);
+      if (!post) {
+        res.status(404).json({
+          success: false,
+          message: 'Post not found',
+        });
+        return;
+      }
+
+      // Check if user already liked the post
+      const userObjectId = new Types.ObjectId(userId);
+      const isLiked = (post.likes as Types.ObjectId[]).some((like) => like.equals(userObjectId));
+
+      let updatedPost: IPost | null;
+      let action: 'liked' | 'unliked';
+
+      if (isLiked) {
+        // Unlike the post
+        updatedPost = await Post.findByIdAndUpdate(
+          postId,
+          { $pull: { likes: userObjectId } },
+          { new: true }
+        ).populate('author', 'username name profilePicture') as IPost | null;
+        action = 'unliked';
+      } else {
+        // Like the post
+        updatedPost = await Post.findByIdAndUpdate(
+          postId,
+          { $addToSet: { likes: userObjectId } },
+          { new: true }
+        ).populate('author', 'username name profilePicture') as IPost | null;
+        action = 'liked';
+      }
+
+      // Handle case where update failed
+      if (!updatedPost) {
+        res.status(500).json({
+          success: false,
+          message: 'Failed to update post',
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `Post ${action} successfully`,
+        data: {
+          _id: updatedPost._id,
+          content: updatedPost.content,
+          author: updatedPost.author,
+          image: updatedPost.image,
+          likes: updatedPost.likes,
+          likesCount: updatedPost.likes.length,
+          isLikedByUser: action === 'liked',
+          createdAt: updatedPost.createdAt,
+          updatedAt: updatedPost.updatedAt,
+        },
+      });
+    } catch (error) {
+      console.error('Toggle like error:', error);
+      next(error);
+    }
+  },
+
+  getLikes: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { postId } = req.params;
+      const page = Number.parseInt(req.query.page as string) || 1;
+      const limit = Number.parseInt(req.query.limit as string) || 20;
+
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+        res.status(400).json({
+          success: false,
+          message: 'Invalid post ID format',
+        });
+        return;
+      }
+
+      const post = await Post.findById(postId).populate({
+        path: 'likes',
+        select: 'username name profilePicture',
+        options: {
+          skip: (page - 1) * limit,
+          limit: limit,
+        },
+      });
+
+      if (!post) {
+        res.status(404).json({
+          success: false,
+          message: 'Post not found',
+        });
+        return;
+      }
+
+      const totalLikes = await Post.findById(postId).select('likes');
+      const total = totalLikes?.likes.length || 0;
+
+      res.status(200).json({
+        success: true,
+        data: {
+          postId: post._id,
+          likes: post.likes,
+          totalLikes: total,
+        },
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      });
+    } catch (error) {
+      console.error('Get post likes error:', error);
       next(error);
     }
   },
