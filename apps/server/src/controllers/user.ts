@@ -1,8 +1,8 @@
 import { Router, type Router as RouterType } from 'express';
 import { ZodError } from 'zod';
 import { User } from '../models';
-import { registrationSchema } from '../schemas/user';
-import { hashPassword } from '../utils/crypto.ts';
+import { loginSchema, registrationSchema } from '../schemas/user';
+import { generateSalt, hashPassword } from '../utils/crypto.ts';
 
 const router: RouterType = Router();
 
@@ -38,12 +38,14 @@ router.post('/register', async (req, res) => {
       return;
     }
 
-    const hashedPassword = await hashPassword(password);
+    const salt = generateSalt();
+    const hashedPassword = await hashPassword(password, salt);
 
     const newUser = new User({
       username: username,
       email: email,
       password: hashedPassword,
+      salt: salt,
       name: name,
       bio: bio || '',
       profilePicture: profilePicture || '',
