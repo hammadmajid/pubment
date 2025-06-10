@@ -1,6 +1,6 @@
 import cookieParser from 'cookie-parser';
 import express, { type Express } from 'express';
-import userController from './controllers/user';
+import userRoutes from './routes/userRoutes.ts';
 
 const app: Express = express();
 
@@ -12,6 +12,6 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.use('/user', userController);
+app.use('/user', userRoutes);
 
 export default app;
