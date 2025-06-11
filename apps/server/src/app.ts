@@ -1,8 +1,9 @@
 import cookieParser from 'cookie-parser';
 import express, { type Express } from 'express';
-import { authenticate } from './middleware/auth.ts';
-import postRoutes from './routes/postRoutes.ts';
-import userRoutes from './routes/userRoutes.ts';
+import { authenticate } from './middleware/auth';
+import postRoutes from './routes/postRoutes';
+import userRoutes from './routes/userRoutes';
+import followRoutes from './routes/followRoutes';
 
 const app: Express = express();
 
@@ -16,5 +17,6 @@ app.get('/health', (_req, res) => {
 
 app.use('/user', userRoutes);
 app.use('/post', authenticate, postRoutes);
+app.use('/follow', authenticate, followRoutes);
 
 export default app;
