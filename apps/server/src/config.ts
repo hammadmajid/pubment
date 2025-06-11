@@ -1,12 +1,9 @@
 import 'dotenv/config';
 
 const jwtSecret = process.env.JWT_SECRET;
-const jwtExpiresIn = process.env.JWT_EXPIRES_IN;
 
-if (!jwtSecret || !jwtExpiresIn) {
-  throw new Error(
-    'JWT_SECRET and JWT_EXPIRES_IN environment variables are required',
-  );
+if (!jwtSecret) {
+  throw new Error('JWT_SECRET environment variable is required');
 }
 
 export const config = {
@@ -18,5 +15,5 @@ export const config = {
   },
   isProduction: process.env.NODE_ENV === 'production',
   jwtSecret,
-  jwtExpiresIn: Number(jwtExpiresIn),
+  jwtExpiresIn: 60 * 60 * 24, // 24 hours in seconds
 };
