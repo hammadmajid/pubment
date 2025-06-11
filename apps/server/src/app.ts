@@ -4,6 +4,7 @@ import { authenticate } from './middleware/auth';
 import postRoutes from './routes/postRoutes';
 import userRoutes from './routes/userRoutes';
 import followRoutes from './routes/followRoutes';
+import commentRoutes from './routes/commentRoutes';
 
 const app: Express = express();
 
@@ -18,5 +19,6 @@ app.get('/health', (_req, res) => {
 app.use('/user', userRoutes);
 app.use('/post', authenticate, postRoutes);
 app.use('/follow', authenticate, followRoutes);
+app.use('/comment', authenticate, commentRoutes);
 
 export default app;
