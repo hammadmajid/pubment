@@ -1,5 +1,5 @@
 import { Router, type Router as RouterType } from 'express';
-import postController from '../controllers/postController.ts';
+import postController from '../controllers/postController';
 
 const router: RouterType = Router();
 
