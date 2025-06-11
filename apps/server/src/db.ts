@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { config } from './config.ts';
+import { config } from './config';
 
 class DatabaseConnection {
   private isConnected = false;

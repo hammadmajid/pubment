@@ -231,26 +231,28 @@ const postController = {
 
       // Check if user already liked the post
       const userObjectId = new Types.ObjectId(userId);
-      const isLiked = (post.likes as Types.ObjectId[]).some((like) => like.equals(userObjectId));
+      const isLiked = (post.likes as Types.ObjectId[]).some((like) =>
+        like.equals(userObjectId),
+      );
 
       let updatedPost: IPost | null;
       let action: 'liked' | 'unliked';
 
       if (isLiked) {
         // Unlike the post
-        updatedPost = await Post.findByIdAndUpdate(
+        updatedPost = (await Post.findByIdAndUpdate(
           postId,
           { $pull: { likes: userObjectId } },
-          { new: true }
-        ).populate('author', 'username name profilePicture') as IPost | null;
+          { new: true },
+        ).populate('author', 'username name profilePicture')) as IPost | null;
         action = 'unliked';
       } else {
         // Like the post
-        updatedPost = await Post.findByIdAndUpdate(
+        updatedPost = (await Post.findByIdAndUpdate(
           postId,
           { $addToSet: { likes: userObjectId } },
-          { new: true }
-        ).populate('author', 'username name profilePicture') as IPost | null;
+          { new: true },
+        ).populate('author', 'username name profilePicture')) as IPost | null;
         action = 'liked';
       }
 

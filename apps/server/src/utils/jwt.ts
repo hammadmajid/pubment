@@ -1,6 +1,6 @@
 import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
-import { config } from '../config.ts';
+import { config } from '../config';
 import type { IUser } from '../models';
 
 /**
