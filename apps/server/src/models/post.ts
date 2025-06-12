@@ -5,7 +5,6 @@ import type { IUser } from './user';
 export interface IPost extends Document {
   content: string;
   author: IUser['_id'];
-  image?: string;
   likes: IUser['_id'][];
   createdAt: Date;
   updatedAt: Date;
@@ -24,10 +23,6 @@ const PostSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-    },
-    image: {
-      type: String,
-      default: '',
     },
     likes: [
       {

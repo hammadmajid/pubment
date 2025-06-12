@@ -27,7 +27,7 @@ const postController = {
         return;
       }
 
-      const { authorId, content, image } = validationResult.data;
+      const { authorId, content } = validationResult.data;
 
       // Validate ObjectId format
       if (!mongoose.Types.ObjectId.isValid(authorId)) {
@@ -53,7 +53,6 @@ const postController = {
       const newPost = new Post({
         author: authorId,
         content: content.trim(), // Ensure content is trimmed
-        image: image || '', // Handle optional image field consistently
       });
 
       const savedPost = await newPost.save();
@@ -68,7 +67,6 @@ const postController = {
           _id: savedPost._id,
           content: savedPost.content,
           author: savedPost.author,
-          image: savedPost.image,
           likes: savedPost.likes,
           createdAt: savedPost.createdAt,
           updatedAt: savedPost.updatedAt,
@@ -272,7 +270,6 @@ const postController = {
           _id: updatedPost._id,
           content: updatedPost.content,
           author: updatedPost.author,
-          image: updatedPost.image,
           likes: updatedPost.likes,
           likesCount: updatedPost.likes.length,
           isLikedByUser: action === 'liked',
