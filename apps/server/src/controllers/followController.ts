@@ -18,11 +18,16 @@ const followController = {
         return;
       }
       if (userId === targetUserId) {
-        res.status(400).json({ success: false, message: 'Cannot follow yourself' });
+        res
+          .status(400)
+          .json({ success: false, message: 'Cannot follow yourself' });
         return;
       }
 
-      const existing = await Follow.findOne({ follower: userId, following: targetUserId });
+      const existing = await Follow.findOne({
+        follower: userId,
+        following: targetUserId,
+      });
       if (existing) {
         await Follow.deleteOne({ _id: existing._id });
         res.status(200).json({ success: true, message: 'Unfollowed user' });
@@ -51,7 +56,7 @@ const followController = {
         .sort({ createdAt: -1 });
       res.status(200).json({
         success: true,
-        data: following.map(f => f.following),
+        data: following.map((f) => f.following),
       });
     } catch (error) {
       next(error);
@@ -74,7 +79,53 @@ const followController = {
         .sort({ createdAt: -1 });
       res.status(200).json({
         success: true,
-        data: followers.map(f => f.follower),
+        data: followers.map((f) => f.follower),
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  getFollowersOfUser: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { userId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        res.status(400).json({ success: false, message: 'Invalid user ID' });
+        return;
+      }
+      const followers = await Follow.find({ following: userId })
+        .populate('follower', 'username name profilePicture')
+        .sort({ createdAt: -1 });
+      res.status(200).json({
+        success: true,
+        data: followers.map((f) => f.follower),
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  getFollowingOfCurrentUser: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+      const following = await Follow.find({ follower: userId })
+        .populate('following', 'username name profilePicture')
+        .sort({ createdAt: -1 });
+      res.status(200).json({
+        success: true,
+        data: following.map((f) => f.following),
       });
     } catch (error) {
       next(error);
