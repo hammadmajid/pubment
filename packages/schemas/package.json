@@ -2,6 +2,9 @@
   "name": "@repo/schemas",
   "version": "1.0.0",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
   "packageManager": "pnpm@10.6.2",
   "devDependencies": {
     "turbo": "^2.5.4",
@@ -9,5 +12,29 @@
   },
   "dependencies": {
     "zod": "^3.25.56"
+  },
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "require": "./build/index.js"
+    },
+    "./comment": {
+      "import": "./build/comment.js",
+      "require": "./build/comment.js"
+    },
+    "./follow": {
+      "import": "./build/follow.js",
+      "require": "./build/follow.js"
+    },
+    "./post": {
+      "import": "./build/post.js",
+      "require": "./build/post.js"
+    },
+    "./user": {
+      "import": "./build/user.js",
+      "require": "./build/user.js"
+    }
   }
 }
