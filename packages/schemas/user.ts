@@ -41,11 +41,47 @@ export const registrationSchema = z.object({
     .or(z.literal('')),
 });
 
+export const registrationResponse = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    userId: z.string(),
+    token: z.string(),
+})
+
 export const loginSchema = z.object({
   username: z.string().min(1, 'Username or email is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
+export const loginResponse = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    userId: z.string(),
+    token: z.string(),
+});
+
+export const userIdRequest = z.object({
+  userId: z.string(),
+});
+
+export const userErrorResponse = z.object({
+  success: z.literal(false),
+  message: z.string(),
+  errors: z.array(z.any()).optional(),
+});
+
+export const userSuccessResponse = z.object({
+  success: z.literal(true),
+  message: z.string(),
+  token: z.string().optional(),
+  userId: z.string().optional(),
+});
+
 // Type exports for TypeScript
 export type RegistrationData = z.infer<typeof registrationSchema>;
+export type RegistrationResponse = z.infer<typeof registrationResponse>;
 export type LoginData = z.infer<typeof loginSchema>;
+export type LoginResponse = z.infer<typeof loginResponse>;
+export type UserIdRequest = z.infer<typeof userIdRequest>;
+export type UserErrorResponse = z.infer<typeof userErrorResponse>;
+export type UserSuccessResponse = z.infer<typeof userSuccessResponse>;

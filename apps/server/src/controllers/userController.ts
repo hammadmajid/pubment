@@ -1,7 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { User } from '../models';
-import { loginSchema, registrationSchema } from '../schemas/userSchema.ts';
+import {
+  loginSchema,
+  registrationSchema,
+  registrationResponse,
+  loginResponse,
+  userErrorResponse,
+  userSuccessResponse,
+} from '@repo/schemas/user';
 import { comparePassword, generateSalt, hashPassword } from '../utils/crypto';
 import { generateToken } from '../utils/jwt';
 
@@ -13,17 +20,14 @@ const userController = {
   ): Promise<void> => {
     try {
       const validationResult = registrationSchema.safeParse(req.body);
-
       if (!validationResult.success) {
-        const errors = validationResult.error.errors.map(
-          (err) => `${err.path.join('.')}: ${err.message}`,
+        res.status(400).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'Validation failed',
+            errors: validationResult.error.errors,
+          }),
         );
-
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: errors,
-        });
         return;
       }
 
@@ -35,10 +39,12 @@ const userController = {
       });
 
       if (existingUser) {
-        res.status(409).json({
-          success: false,
-          message: 'User already exists with this email or username',
-        });
+        res.status(409).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'User already exists with this email or username',
+          }),
+        );
         return;
       }
 
@@ -70,28 +76,33 @@ const userController = {
       });
 
       // Return success response with a token
-      res.status(201).json({
-        success: true,
-        message: 'User registered successfully',
-        token: token,
-      });
+      res.status(201).json(
+        registrationResponse.parse({
+          success: true,
+          message: 'User registered successfully',
+          userId: savedUser._id.toString(),
+          token: token,
+        }),
+      );
     } catch (error) {
-      console.error('Registration error:', error);
-
       if (error instanceof Error && 'code' in error && error.code === 11000) {
-        res.status(409).json({
-          success: false,
-          message: 'User already exists with this email or username',
-        });
+        res.status(409).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'User already exists with this email or username',
+          }),
+        );
         return;
       }
 
       if (error instanceof ZodError) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: Object.values(error.errors.map((err) => err.message)).join(),
-        });
+        res.status(400).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'Validation failed',
+            errors: error.errors,
+          }),
+        );
         return;
       }
 
@@ -106,17 +117,14 @@ const userController = {
   ): Promise<void> => {
     try {
       const validationResult = loginSchema.safeParse(req.body);
-
       if (!validationResult.success) {
-        const errors = validationResult.error.errors.map(
-          (err) => `${err.path.join('.')}: ${err.message}`,
+        res.status(400).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'Validation failed',
+            errors: validationResult.error.errors,
+          }),
         );
-
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: errors,
-        });
         return;
       }
 
@@ -127,18 +135,22 @@ const userController = {
       });
 
       if (!user) {
-        res.status(401).json({
-          success: false,
-          message: 'Invalid credentials',
-        });
+        res.status(401).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'Invalid credentials',
+          }),
+        );
         return;
       }
 
       if (!(await comparePassword(password, user.salt, user.password))) {
-        res.status(401).json({
-          success: false,
-          message: 'Invalid credentials',
-        });
+        res.status(401).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'Invalid credentials',
+          }),
+        );
         return;
       }
 
@@ -154,20 +166,23 @@ const userController = {
       });
 
       // Return success response with a token
-      res.status(200).json({
-        success: true,
-        message: 'User logged in successfully',
-        token: token,
-      });
+      res.status(200).json(
+        loginResponse.parse({
+          success: true,
+          message: 'User logged in successfully',
+          userId: user._id.toString(),
+          token: token,
+        }),
+      );
     } catch (error) {
-      console.error('Login error:', error);
-
       if (error instanceof ZodError) {
-        res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: Object.values(error.errors.map((err) => err.message)).join(),
-        });
+        res.status(400).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'Validation failed',
+            errors: error.errors,
+          }),
+        );
         return;
       }
 
