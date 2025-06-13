@@ -9,6 +9,7 @@ import {
     commentListResponse,
     commentErrorResponse,
 } from '@repo/schemas/comment';
+import { normalizeComment } from '../utils/normalizations';
 
 const commentController = {
     create: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -48,7 +49,7 @@ const commentController = {
             res.status(201).json(commentCreateResponse.parse({
                 success: true,
                 message: 'Comment created successfully',
-                data: savedComment,
+                data: normalizeComment(savedComment),
             }));
             return;
         } catch (error) {
@@ -71,7 +72,7 @@ const commentController = {
                 .sort({ createdAt: -1 });
             res.status(200).json(commentListResponse.parse({
                 success: true,
-                data: comments,
+                data: comments.map(normalizeComment),
             }));
             return;
         } catch (error) {
@@ -99,7 +100,7 @@ const commentController = {
             }
             res.status(200).json(commentResponse.parse({
                 success: true,
-                data: comment,
+                data: normalizeComment(comment),
             }));
             return;
         } catch (error) {

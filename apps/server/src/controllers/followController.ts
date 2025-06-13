@@ -7,6 +7,7 @@ import {
   userListResponse,
   followErrorResponse,
 } from '@repo/schemas/follow';
+import { normalizeUser } from '../utils/normalizations';
 
 const followController = {
   toggleFollow: async (
@@ -81,7 +82,7 @@ const followController = {
         .sort({ createdAt: -1 });
       res.status(200).json(userListResponse.parse({
         success: true,
-        data: following.map((f) => f.following),
+        data: following.map((f) => normalizeUser(f.following)),
       }));
     } catch (error) {
       next(error);
@@ -107,7 +108,7 @@ const followController = {
         .sort({ createdAt: -1 });
       res.status(200).json(userListResponse.parse({
         success: true,
-        data: followers.map((f) => f.follower),
+        data: followers.map((f) => normalizeUser(f.follower)),
       }));
     } catch (error) {
       next(error);
@@ -133,7 +134,7 @@ const followController = {
         .sort({ createdAt: -1 });
       res.status(200).json(userListResponse.parse({
         success: true,
-        data: followers.map((f) => f.follower),
+        data: followers.map((f) => normalizeUser(f.follower)),
       }));
     } catch (error) {
       next(error);
@@ -159,7 +160,7 @@ const followController = {
         .sort({ createdAt: -1 });
       res.status(200).json(userListResponse.parse({
         success: true,
-        data: following.map((f) => f.following),
+        data: following.map((f) => normalizeUser(f.following)),
       }));
     } catch (error) {
       next(error);
