@@ -120,10 +120,11 @@ const postController = {
         .skip(skip)
         .limit(limit);
       const total = await Post.countDocuments();
+      const normalizedPosts = posts.map(normalizePost);
       res.status(200).json(
         postListResponse.parse({
           success: true,
-          data: posts,
+          data: normalizedPosts,
           pagination: {
             page,
             limit,
@@ -169,7 +170,7 @@ const postController = {
       res.status(200).json(
         postResponse.parse({
           success: true,
-          data: post,
+          data: normalizePost(post),
         }),
       );
     } catch (error) {
@@ -243,12 +244,15 @@ const postController = {
         );
         return;
       }
+      const normalized = normalizePost(updatedPost);
       res.status(200).json(
         postLikeResponse.parse({
           success: true,
           message: `Post ${action} successfully`,
           data: {
-            ...updatedPost.toObject(),
+            ...(typeof normalized === 'object' && normalized !== null
+              ? normalized
+              : {}),
             likesCount: updatedPost.likes.length,
             isLikedByUser: action === 'liked',
           },
@@ -317,5 +321,71 @@ const postController = {
     }
   },
 };
+
+// Utility to convert Mongoose post(s) to plain object(s) with string _id fields
+function normalizePost(post: unknown): Record<string, unknown> | undefined {
+  if (!post) return post as undefined;
+  let obj: Record<string, unknown>;
+  if (
+    typeof post === 'object' &&
+    post !== null &&
+    typeof (post as { toObject?: () => unknown }).toObject === 'function'
+  ) {
+    obj = (post as { toObject: () => unknown }).toObject() as Record<
+      string,
+      unknown
+    >;
+  } else {
+    obj = post as Record<string, unknown>;
+  }
+  // Normalize author
+  let author = obj.author;
+  if (author && typeof author === 'object' && author !== null) {
+    const authorObj = author as Record<string, unknown>;
+    author = {
+      ...(authorObj as Record<string, unknown>),
+      _id:
+        authorObj._id &&
+        typeof authorObj._id === 'object' &&
+        authorObj._id !== null &&
+        'toString' in authorObj._id
+          ? (authorObj._id as { toString: () => string }).toString()
+          : authorObj._id,
+    };
+  }
+  // Normalize likes
+  let likes = obj.likes;
+  if (Array.isArray(likes)) {
+    likes = (likes as unknown[]).map((like) => {
+      if (
+        typeof like === 'object' &&
+        like !== null &&
+        '_id' in like &&
+        typeof (like as Record<string, unknown>)._id === 'object' &&
+        (like as Record<string, unknown>)._id !== null &&
+        'toString' in (like as Record<string, unknown>)._id
+      ) {
+        return (
+          (like as Record<string, unknown>)._id as { toString: () => string }
+        ).toString();
+      }
+      return typeof like === 'object' && like !== null && 'toString' in like
+        ? (like as { toString: () => string }).toString()
+        : like;
+    });
+  }
+  return {
+    ...obj,
+    _id:
+      obj._id &&
+      typeof obj._id === 'object' &&
+      obj._id !== null &&
+      'toString' in obj._id
+        ? (obj._id as { toString: () => string }).toString()
+        : obj._id,
+    author,
+    likes,
+  };
+}
 
 export default postController;

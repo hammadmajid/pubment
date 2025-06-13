@@ -16,8 +16,8 @@ export const postData = z.object({
     profilePicture: z.string().nullable().optional(),
   }),
   likes: z.array(z.string()),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export const postCreateResponse = z.object({
