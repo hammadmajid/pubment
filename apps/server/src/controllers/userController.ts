@@ -7,7 +7,6 @@ import {
   registrationResponse,
   loginResponse,
   userErrorResponse,
-  userSuccessResponse,
 } from '@repo/schemas/user';
 import { comparePassword, generateSalt, hashPassword } from '../utils/crypto';
 import { generateToken } from '../utils/jwt';
