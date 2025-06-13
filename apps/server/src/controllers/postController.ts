@@ -79,7 +79,7 @@ const postController = {
       if (
         error instanceof mongoose.Error &&
         error.name === 'MongoServerError' &&
-        (error as { code: number }).code === 11000
+        ((error as unknown) as { code: number }).code === 11000
       ) {
         res.status(409).json(
           postErrorResponse.parse({
