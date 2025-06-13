@@ -120,11 +120,10 @@ const postController = {
         .skip(skip)
         .limit(limit);
       const total = await Post.countDocuments();
-      const normalizedPosts = posts.map(normalizePost);
       res.status(200).json(
         postListResponse.parse({
           success: true,
-          data: normalizedPosts,
+          data: posts,
           pagination: {
             page,
             limit,
@@ -170,7 +169,7 @@ const postController = {
       res.status(200).json(
         postResponse.parse({
           success: true,
-          data: normalizePost(post),
+          data: post,
         }),
       );
     } catch (error) {
@@ -244,15 +243,12 @@ const postController = {
         );
         return;
       }
-      const normalized = normalizePost(updatedPost);
       res.status(200).json(
         postLikeResponse.parse({
           success: true,
           message: `Post ${action} successfully`,
           data: {
-            ...(typeof normalized === 'object' && normalized !== null
-              ? normalized
-              : {}),
+            ...updatedPost.toObject(),
             likesCount: updatedPost.likes.length,
             isLikedByUser: action === 'liked',
           },
