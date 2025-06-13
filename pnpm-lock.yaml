@@ -126,6 +126,9 @@ importers:
 
   apps/server:
     dependencies:
+      '@repo/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
       cookie-parser:
         specifier: ^1.4.6
         version: 1.4.7
@@ -166,6 +169,19 @@ importers:
       tsup:
         specifier: ^8.5.0
         version: 8.5.0(jiti@2.4.2)(postcss@8.5.4)(typescript@5.8.3)
+      turbo:
+        specifier: ^2.5.4
+        version: 2.5.4
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
+  packages/schemas:
+    dependencies:
+      zod:
+        specifier: ^3.25.56
+        version: 3.25.56
+    devDependencies:
       turbo:
         specifier: ^2.5.4
         version: 2.5.4
