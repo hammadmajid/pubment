@@ -10,6 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 export type ApiEndpoint =
   | '/user/register'
   | '/user/login'
+  | `/user/${string}`
   | '/post'
   | `/post/${string}`
   | '/post/create'
@@ -28,17 +29,18 @@ export type Result<T> = { ok: true; value: T } | { ok: false; error: Error };
 
 /**
  * safeFetch: fetch wrapper that validates the response using a Zod schema.
- * @param url - endpoint URL (must be a valid ApiEndpoint)
+ * @param endpoint - endpoint URL (must be a valid ApiEndpoint)
  * @param options - fetch options (body should be already validated)
  * @param schema - Zod schema for expected response
  * @returns Result<T> with either value or error
  */
 export async function safeFetch<T>(
-  url: ApiEndpoint,
+  endpoint: ApiEndpoint,
   options: RequestInit,
   schema: ZodSchema<T> | ZodType<T, ZodTypeDef, unknown>,
 ): Promise<Result<T>> {
   try {
+    const url = `http://localhost:3000${endpoint}`
     const res = await fetch(url, options);
     const contentType = res.headers.get('content-type');
     let data: unknown;
@@ -50,6 +52,9 @@ export async function safeFetch<T>(
     const value = schema.parse(data);
     return { ok: true, value };
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error : new Error(String(error)) };
+    return {
+      ok: false,
+      error: error instanceof Error ? error : new Error(String(error)),
+    };
   }
 }
