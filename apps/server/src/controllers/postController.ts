@@ -11,6 +11,7 @@ import {
   postLikesListResponse,
   postErrorResponse,
 } from '@repo/schemas/post';
+import { normalizePost, normalizeUser } from '../utils/normalizations';
 
 const postController = {
   create: async (
@@ -61,7 +62,7 @@ const postController = {
         postCreateResponse.parse({
           success: true,
           message: 'Post created successfully',
-          data: savedPost,
+          data: normalizePost(savedPost),
         }),
       );
     } catch (error) {
@@ -122,7 +123,7 @@ const postController = {
       res.status(200).json(
         postListResponse.parse({
           success: true,
-          data: posts,
+          data: posts.map(normalizePost),
           pagination: {
             page,
             limit,
@@ -168,7 +169,7 @@ const postController = {
       res.status(200).json(
         postResponse.parse({
           success: true,
-          data: post,
+          data: normalizePost(post),
         }),
       );
     } catch (error) {
@@ -242,12 +243,13 @@ const postController = {
         );
         return;
       }
+      const normalized = normalizePost(updatedPost);
       res.status(200).json(
         postLikeResponse.parse({
           success: true,
           message: `Post ${action} successfully`,
           data: {
-            ...updatedPost.toObject(),
+            ...normalized,
             likesCount: updatedPost.likes.length,
             isLikedByUser: action === 'liked',
           },
@@ -299,8 +301,10 @@ const postController = {
         postLikesListResponse.parse({
           success: true,
           data: {
-            postId: post._id,
-            likes: post.likes,
+            postId: post._id.toString(),
+            likes: Array.isArray(post.likes)
+              ? post.likes.map(normalizeUser)
+              : [],
             totalLikes: total,
           },
           pagination: {
