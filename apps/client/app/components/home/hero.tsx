@@ -20,7 +20,7 @@ export default function Hero() {
               matter.
             </p>
             <div className='flex flex-col gap-2 min-[400px]:flex-row'>
-              <Link to='/signup'>
+              <Link to='/register'>
                 <Button size='lg' className='px-8'>
                   Get Started
                 </Button>

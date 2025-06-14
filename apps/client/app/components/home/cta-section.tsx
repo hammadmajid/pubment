@@ -16,7 +16,7 @@ export default function CTASection() {
             </p>
           </div>
           <div className='flex flex-col gap-2 min-[400px]:flex-row'>
-            <Link to='/signup'>
+            <Link to='/register'>
               <Button size='lg' variant='secondary' className='px-8'>
                 Create Account
               </Button>

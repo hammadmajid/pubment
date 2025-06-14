@@ -57,7 +57,7 @@ export default function Footer() {
             <p className='text-sm text-muted-foreground'>
               Be part of our growing community.
             </p>
-            <Link to='/signup'>
+            <Link to='/register'>
               <Button>Get Started</Button>
             </Link>
           </div>
