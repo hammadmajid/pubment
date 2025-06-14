@@ -7,9 +7,12 @@ import {
   registrationResponse,
   loginResponse,
   userErrorResponse,
+  publicUserSuccessResponse,
+  publicUserSchema,
 } from '@repo/schemas/user';
 import { comparePassword, generateSalt, hashPassword } from '../utils/crypto';
 import { generateToken } from '../utils/jwt';
+import { success } from 'zod/v4';
 
 const userController = {
   register: async (
@@ -185,6 +188,55 @@ const userController = {
         return;
       }
 
+      next(error);
+    }
+  },
+
+  getByUsername: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const usernameSchema = registrationSchema.shape.username;
+      const parseResult = usernameSchema.safeParse(req.params.username);
+      if (!parseResult.success) {
+        res.status(400).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'Invalid username',
+            errors: parseResult.error.errors,
+          }),
+        );
+        return;
+      }
+
+      const username = parseResult.data;
+      const user = await User.findOne({ username });
+
+      if (!user) {
+        res.status(404).json(
+          userErrorResponse.parse({
+            success: false,
+            message: 'User not found',
+          }),
+        );
+        return;
+      }
+
+      res.status(200).json(
+        publicUserSuccessResponse.parse({
+          success: true,
+          message: 'User found',
+          user: publicUserSchema.parse({
+            username: user.username,
+            name: user.name,
+            bio: user.bio || '',
+            profilePicture: user.profilePicture || '',
+          }),
+        }),
+      );
+    } catch (error) {
       next(error);
     }
   },

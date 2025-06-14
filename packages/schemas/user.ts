@@ -70,11 +70,17 @@ export const userErrorResponse = z.object({
   errors: z.array(z.any()).optional(),
 });
 
-export const userSuccessResponse = z.object({
+export const publicUserSchema = z.object({
+  username: registrationSchema.shape.username,
+  name: registrationSchema.shape.name,
+  bio: registrationSchema.shape.bio.default(''),
+  profilePicture: registrationSchema.shape.profilePicture.default(''),
+});
+
+export const publicUserSuccessResponse = z.object({
   success: z.literal(true),
   message: z.string(),
-  token: z.string().optional(),
-  userId: z.string().optional(),
+  user: publicUserSchema,
 });
 
 // Type exports for TypeScript
@@ -84,4 +90,5 @@ export type LoginData = z.infer<typeof loginSchema>;
 export type LoginResponse = z.infer<typeof loginResponse>;
 export type UserIdRequest = z.infer<typeof userIdRequest>;
 export type UserErrorResponse = z.infer<typeof userErrorResponse>;
-export type UserSuccessResponse = z.infer<typeof userSuccessResponse>;
+export type UserSuccessResponse = z.infer<typeof publicUserSuccessResponse>;
+export type PublicUser = z.infer<typeof publicUserSchema>;
