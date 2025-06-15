@@ -10,6 +10,7 @@
   "packageManager": "pnpm@10.6.2",
   "devDependencies": {
     "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/mongodb": "^4.0.7",
@@ -21,6 +22,7 @@
   "dependencies": {
     "@repo/schemas": "workspace:*",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
