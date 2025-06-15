@@ -7,12 +7,9 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
-  CardDescription,
 } from '~/components/ui/card';
 import { Skeleton } from '~/components/ui/skeleton';
-import { Heart, MessageCircle } from 'lucide-react';
-import { Post } from '~/components/Post';
+import { Post } from '~/components/post';
 
 export async function clientLoader() {
   if (!isAuthenticated()) {
