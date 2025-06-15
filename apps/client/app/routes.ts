@@ -6,4 +6,6 @@ export default [
   route('/register', 'routes/register.tsx'),
   route('/user/:username', 'routes/user.tsx'),
   route('/feed', 'routes/feed.tsx'),
+  route('/search', "routes/search.tsx"),
+  route("/settings", "routes/settings.tsx")
 ] satisfies RouteConfig;
