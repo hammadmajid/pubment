@@ -24,5 +24,5 @@ export const config = {
   isProduction: process.env.NODE_ENV === 'production',
   jwtSecret,
   jwtExpiresIn: 60 * 60 * 24, // 24 hours in seconds
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
 };

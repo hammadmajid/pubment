@@ -11,6 +11,8 @@ import userRoutes from './routes/userRoutes';
 
 const app: Express = express();
 
+app.disable('etag')
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
