@@ -4,8 +4,14 @@ import { publicUserSuccessResponse } from '@repo/schemas/user';
 import { redirect } from 'react-router';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { isAuthenticated } from '~/lib/auth';
+import { Skeleton } from '~/components/ui/skeleton';
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function clientLoader({ params }: Route.LoaderArgs) {
+  if (!isAuthenticated()) {
+    return redirect('/login');
+  }
+
   const username = params.username;
   const result = await safeFetch(
     `/user/${username}`,
@@ -18,6 +24,27 @@ export async function loader({ params }: Route.LoaderArgs) {
   }
 
   return result.value;
+}
+
+export function HydrateFallback() {
+  return (
+    <div className='p-6 sm:p-10 bg-background min-h-screen flex items-center justify-center'>
+      <Card className='w-full max-w-md mx-auto'>
+        <CardHeader className='text-center pb-4'>
+          <div className='flex justify-center mb-4'>
+            <Skeleton className='h-24 w-24 rounded-full' />
+          </div>
+          <div className='space-y-1'>
+            <Skeleton className='h-8 w-32 mx-auto' />
+            <Skeleton className='h-5 w-24 mx-auto' />
+          </div>
+        </CardHeader>
+        <CardContent className='pt-0'>
+          <Skeleton className='h-4 w-3/4 mx-auto mt-2' />
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 export default function Component({

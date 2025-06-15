@@ -14,6 +14,10 @@ import { Skeleton } from '~/components/ui/skeleton';
 import { Heart, MessageCircle } from 'lucide-react';
 
 export async function clientLoader() {
+  if (!isAuthenticated()) {
+    return redirect('/login');
+  }
+
   const result = await safeFetch('/post', {}, postListResponse);
 
   if (result.ok === false) {
