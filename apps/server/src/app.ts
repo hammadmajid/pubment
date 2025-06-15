@@ -18,6 +18,9 @@ app.use(
   cors({
     origin: config.corsOrigin,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['*'],
+    exposedHeaders: ['*'],
   }),
 );
 app.use(morgan('tiny'))
