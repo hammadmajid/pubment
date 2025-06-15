@@ -67,9 +67,9 @@ export default function Component({
 
   return (
     <AppWrapper>
-      <div className='p-6 sm:p-10 bg-background min-h-screen flex items-center justify-center'>
-        <Card className='w-full max-w-md mx-auto'>
-          <CardHeader className='text-center pb-4'>
+      <div className='px-8 py-2'>
+        <Card className='w-full mx-auto'>
+          <CardHeader className='text-center pb-4 flex items-center justify-start gap-8'>
             <div className='flex justify-center mb-4'>
               <Avatar className='h-24 w-24'>
                 <AvatarImage

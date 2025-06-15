@@ -54,7 +54,7 @@ export default function Feed({ loaderData }: Route.ComponentProps) {
 
   return (
     <AppWrapper>
-      <div className='flex flex-col gap-6 max-w-xl mx-auto py-8'>
+      <div className='flex flex-col gap-6 px-8 py-2'>
         {loaderData.data.length === 0 ? (
           <div className='text-center text-muted-foreground'>No posts yet.</div>
         ) : (
