@@ -9,6 +9,7 @@ import {
 import { Heart, MessageCircle } from 'lucide-react';
 import { postData } from '@repo/schemas/post';
 import { Link } from 'react-router';
+import { getRelativeTime } from '~/lib/utils';
 
 interface PostProps {
   post: z.infer<typeof postData>;
@@ -23,7 +24,7 @@ export function Post({ post, isClickable = false }: PostProps) {
           {post.author.name} (@{post.author.username})
         </CardTitle>
         <CardDescription>
-          {new Date(post.createdAt).toLocaleString()}
+          {getRelativeTime(post.createdAt)}
         </CardDescription>
       </CardHeader>
       <CardContent>
