@@ -32,7 +32,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/user', userRoutes);
-app.use('/post', postRoutes);
+app.use('/post', authenticate, postRoutes);
 app.use('/follow', authenticate, followRoutes);
 app.use('/comment', authenticate, commentRoutes);
 
