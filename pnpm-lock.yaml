@@ -153,6 +153,9 @@ importers:
       mongoose:
         specifier: ^8.15.1
         version: 8.15.1
+      morgan:
+        specifier: ^1.10.0
+        version: 1.10.0
       zod:
         specifier: ^3.25.56
         version: 3.25.56
@@ -172,6 +175,9 @@ importers:
       '@types/mongodb':
         specifier: ^4.0.7
         version: 4.0.7
+      '@types/morgan':
+        specifier: ^1.9.10
+        version: 1.9.10
       '@types/node':
         specifier: ^20
         version: 20.19.0
@@ -1135,6 +1141,9 @@ packages:
   '@types/mongodb@4.0.7':
     resolution: {integrity: sha512-lPUYPpzA43baXqnd36cZ9xxorprybxXDzteVKCPAdp14ppHtFJHnXYvNpmBvtMUTb5fKXVv6sVbzo1LHkWhJlw==}
     deprecated: mongodb provides its own types. @types/mongodb is no longer needed.
+
+  '@types/morgan@1.9.10':
+    resolution: {integrity: sha512-sS4A1zheMvsADRVfT0lYbJ4S9lmsey8Zo2F7cnbYjWHP67Q0AwMYuuzLlkIM2N8gAbb9cubhIVFwcIN2XyYCkA==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -3533,6 +3542,10 @@ snapshots:
       - mongodb-client-encryption
       - snappy
       - socks
+
+  '@types/morgan@1.9.10':
+    dependencies:
+      '@types/node': 20.19.0
 
   '@types/ms@2.1.0': {}
 
