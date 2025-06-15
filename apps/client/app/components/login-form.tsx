@@ -3,8 +3,11 @@
 import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import { Link } from 'react-router';
-import { loginSchema } from '@repo/schemas/user';
+import { Link, useNavigate } from 'react-router';
+import {
+  loginResponse,
+  loginSchema,
+} from '@repo/schemas/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import {
@@ -16,14 +19,43 @@ import {
   FormMessage,
 } from '~/components/ui/form';
 import z from 'zod';
+import { safeFetch } from '~/lib/fetch';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { setToken, setUserId } from '~/lib/auth';
 
 export function LoginForm({ className }: React.ComponentProps<'form'>) {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
   });
 
-  function onSubmit(values: z.infer<typeof loginSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
+    setIsLoading(true);
+    const result = await safeFetch(
+      '/user/login',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      },
+      loginResponse,
+    );
+
+    if (result.ok === false) {
+      toast('Failed to login', {
+        description: result.error.message,
+      });
+    } else {
+      setToken(result.value.token);
+      setUserId(result.value.userId);
+      navigate('/feed');
+    }
+    setIsLoading(false);
   }
 
   return (
@@ -70,7 +102,11 @@ export function LoginForm({ className }: React.ComponentProps<'form'>) {
               )}
             />
           </div>
-          <Button type='submit' className='w-full' disabled={form.formState.isSubmitting}>
+          <Button
+            type='submit'
+            className='w-full'
+            disabled={form.formState.isSubmitting}
+          >
             Login
           </Button>
         </div>

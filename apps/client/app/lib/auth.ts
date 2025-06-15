@@ -7,6 +7,10 @@ export function getToken() {
   );
 }
 
+export function setToken(token: string) {
+  document.cookie = `token=${token}; path=/; domain=${window.location.hostname}`;
+}
+
 export function isAuthenticated() {
   return !!getToken();
 }

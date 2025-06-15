@@ -4,7 +4,7 @@ import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Link } from 'react-router';
-import { registrationSchema } from '@repo/schemas/user';
+import { registrationResponse, registrationSchema } from '@repo/schemas/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import {
@@ -16,14 +16,43 @@ import {
   FormMessage,
 } from '~/components/ui/form';
 import z from 'zod';
+import { safeFetch } from '~/lib/fetch';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { useNavigate } from "react-router";
+import { setToken, setUserId } from '~/lib/auth';
 
 export function RegisterForm({ className }: React.ComponentProps<'form'>) {
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof registrationSchema>>({
     resolver: zodResolver(registrationSchema),
   });
 
-  function onSubmit(values: z.infer<typeof registrationSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof registrationSchema>) {
+    setIsLoading(true);
+    const result = await safeFetch(
+      '/user/register',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      },
+      registrationResponse,
+    );
+
+    if (result.ok === false) {
+      toast('Failed to register', {
+        description: result.error.message,
+      });
+    } else {
+      setToken(result.value.token);
+      setUserId(result.value.userId);
+      navigate('/feed');
+    }
+    setIsLoading(false);
   }
 
   return (
@@ -107,7 +136,7 @@ export function RegisterForm({ className }: React.ComponentProps<'form'>) {
               )}
             />
           </div>
-          <Button type='submit' className='w-full' disabled={form.formState.isSubmitting}>
+          <Button type='submit' className='w-full' disabled={isLoading}>
             Register
           </Button>
         </div>
