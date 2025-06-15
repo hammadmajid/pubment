@@ -61,7 +61,7 @@ export default function Feed({ loaderData }: Route.ComponentProps) {
       {loaderData.data.length === 0 ? (
         <div className='text-center text-muted-foreground'>No posts yet.</div>
       ) : (
-        loaderData.data.map((post) => <Post key={post._id} post={post} />)
+        loaderData.data.map((post) => <Post key={post._id} isClickable={true} post={post} />)
       )}
     </main>
   );
