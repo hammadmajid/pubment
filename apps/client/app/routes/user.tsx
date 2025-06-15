@@ -1,4 +1,4 @@
-import { safeFetch } from '~/lib/utils';
+import { safeFetch } from '~/lib/fetch';
 import type { Route } from './+types/user';
 import { publicUserSuccessResponse } from '@repo/schemas/user';
 import { redirect } from 'react-router';
