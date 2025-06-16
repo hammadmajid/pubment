@@ -170,9 +170,10 @@ export async function action({ request }: Route.ActionArgs) {
     });
   }
 
-  const { userId, token } = result.value;
+  const { userId, username: resultUsername, token } = result.value;
   session.set('token', token);
   session.set('userId', userId);
+  session.set('username', resultUsername);
 
   return redirect('/feed', {
     headers: {

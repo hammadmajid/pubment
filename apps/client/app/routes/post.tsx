@@ -28,7 +28,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     return redirect('/404');
   }
 
-  return result.value.data;
+  return {
+    username: session.get('username'),
+    data: result.value.data,
+  };
 }
 
 export function meta() {
@@ -43,9 +46,9 @@ export function meta() {
 
 export default function PostDetails({ loaderData }: Route.ComponentProps) {
   return (
-    <AppWrapper>
+    <AppWrapper username={loaderData.username}>
       <div className='flex flex-col gap-6 px-8 py-2'>
-        <Post post={loaderData} />
+        <Post post={loaderData.data} />
       </div>
     </AppWrapper>
   );

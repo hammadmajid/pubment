@@ -11,12 +11,15 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect('/login');
   }
 
-  return session.get('userId');
+  return {
+    userId: session.get('userId'),
+    username: session.get('username'),
+  };
 }
 
 export default function Settings({ loaderData }: Route.ComponentProps) {
   return (
-    <AppWrapper>
+    <AppWrapper username={loaderData.username}>
       <div className='px-8 py-2'>
         <Form method='post'>
           <Button variant='destructive'>Logout</Button>

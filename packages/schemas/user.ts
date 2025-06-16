@@ -42,11 +42,12 @@ export const registrationSchema = z.object({
 });
 
 export const registrationResponse = z.object({
-    success: z.boolean(),
-    message: z.string(),
-    userId: z.string(),
-    token: z.string(),
-})
+  success: z.boolean(),
+  message: z.string(),
+  userId: z.string(),
+  username: z.string(),
+  token: z.string(),
+});
 
 export const loginSchema = z.object({
   username: z.string().min(1, 'Username or email is required'),
@@ -54,10 +55,11 @@ export const loginSchema = z.object({
 });
 
 export const loginResponse = z.object({
-    success: z.boolean(),
-    message: z.string(),
-    userId: z.string(),
-    token: z.string(),
+  success: z.boolean(),
+  message: z.string(),
+  userId: z.string(),
+  username: z.string(),
+  token: z.string(),
 });
 
 export const userIdRequest = z.object({

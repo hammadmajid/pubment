@@ -83,6 +83,7 @@ const userController = {
           success: true,
           message: 'User registered successfully',
           userId: savedUser._id.toString(),
+          username: savedUser.username,
           token: token,
         }),
       );
@@ -173,6 +174,7 @@ const userController = {
           success: true,
           message: 'User logged in successfully',
           userId: user._id.toString(),
+          username: user.username,
           token: token,
         }),
       );

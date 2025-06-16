@@ -7,13 +7,14 @@ import {
 } from '~/components/ui/sidebar';
 
 interface AppWrapperProps {
+  username: string;
   children: React.ReactElement;
 }
 
-export default function AppWrapper({ children }: AppWrapperProps) {
+export default function AppWrapper({ username, children }: AppWrapperProps) {
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar username={username} />
       <SidebarInset>
         <header className='flex items-center justify-between p-4'>
           <SidebarTrigger />

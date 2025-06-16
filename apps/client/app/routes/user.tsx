@@ -7,7 +7,6 @@ import {
 import { redirect } from 'react-router';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Skeleton } from '~/components/ui/skeleton';
 import AppWrapper from '~/components/app/wrapper';
 import { getSession } from '~/session.server';
 
@@ -29,37 +28,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     return redirect('/404');
   }
 
-  return result.value;
+  return {
+    username: session.get('username'),
+    data: result.value,
+  };
 }
 
-export function HydrateFallback() {
-  return (
-    <AppWrapper>
-      <div className='p-6 sm:p-10 bg-background min-h-screen flex items-center justify-center'>
-        <Card className='w-full max-w-md mx-auto'>
-          <CardHeader className='text-center pb-4'>
-            <div className='flex justify-center mb-4'>
-              <Skeleton className='h-24 w-24 rounded-full' />
-            </div>
-            <div className='space-y-1'>
-              <Skeleton className='h-8 w-32 mx-auto' />
-              <Skeleton className='h-5 w-24 mx-auto' />
-            </div>
-          </CardHeader>
-          <CardContent className='pt-0'>
-            <Skeleton className='h-4 w-3/4 mx-auto mt-2' />
-          </CardContent>
-        </Card>
-      </div>
-    </AppWrapper>
-  );
-}
-
-export default function Component({
-  params,
-  loaderData,
-}: Route.ComponentProps) {
-  const user = loaderData.user;
+export default function Component({ loaderData }: Route.ComponentProps) {
+  const user = loaderData.data.user;
 
   const getInitials = (name: string) => {
     return name
@@ -71,7 +47,7 @@ export default function Component({
   };
 
   return (
-    <AppWrapper>
+    <AppWrapper username={loaderData.username}>
       <div className='px-8 py-2'>
         <Card className='w-full mx-auto'>
           <CardHeader className='text-center pb-4 flex items-center justify-start gap-8'>

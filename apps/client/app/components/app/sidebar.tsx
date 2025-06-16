@@ -20,30 +20,34 @@ import {
 import { Button } from '~/components/ui/button';
 import { Link } from 'react-router';
 
-const navigationItems = [
-  {
-    title: 'Feed',
-    url: '/feed',
-    icon: Home,
-  },
-  {
-    title: 'Search',
-    url: '/search',
-    icon: Search,
-  },
-  {
-    title: 'Profile',
-    url: '/user/shadcn', // TODO: make this prop or get from cookie
-    icon: User,
-  },
-  {
-    title: 'Settings',
-    url: '/settings',
-    icon: Settings,
-  },
-];
+interface AppSidebarProps {
+  username: string;
+}
 
-export function AppSidebar() {
+export function AppSidebar({ username }: AppSidebarProps) {
+  const navigationItems = [
+    {
+      title: 'Feed',
+      url: '/feed',
+      icon: Home,
+    },
+    {
+      title: 'Search',
+      url: '/search',
+      icon: Search,
+    },
+    {
+      title: 'Profile',
+      url: `/user/${username}`,
+      icon: User,
+    },
+    {
+      title: 'Settings',
+      url: '/settings',
+      icon: Settings,
+    },
+  ];
+
   return (
     <Sidebar>
       <SidebarHeader>
