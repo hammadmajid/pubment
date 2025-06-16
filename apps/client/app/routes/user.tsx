@@ -1,23 +1,28 @@
 import { safeFetch } from '~/lib/fetch';
 import type { Route } from './+types/user';
-import { publicUserSuccessResponse } from '@repo/schemas/user';
+import {
+  publicUserSuccessResponse,
+  userErrorResponse,
+} from '@repo/schemas/user';
 import { redirect } from 'react-router';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { isAuthenticated } from '~/lib/auth';
 import { Skeleton } from '~/components/ui/skeleton';
 import AppWrapper from '~/components/app/wrapper';
+import { getSession } from '~/session.server';
 
-export async function clientLoader({ params }: Route.LoaderArgs) {
-  if (!isAuthenticated()) {
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  if (!session.has('token')) {
     return redirect('/login');
   }
 
   const username = params.username;
   const result = await safeFetch(
-    `/user/${username}`,
-    {},
+    { endpoint: `/user/${username}` },
     publicUserSuccessResponse,
+    userErrorResponse,
   );
 
   if (!result.ok) {

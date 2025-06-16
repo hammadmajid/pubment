@@ -1,19 +1,26 @@
 import { redirect } from 'react-router';
-import { isAuthenticated } from '~/lib/auth';
 import { safeFetch } from '~/lib/fetch';
-import { postListResponse } from '@repo/schemas/post';
+import { postErrorResponse, postListResponse } from '@repo/schemas/post';
 import type { Route } from './+types/feed';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Skeleton } from '~/components/ui/skeleton';
 import { Post } from '~/components/post';
 import AppWrapper from '~/components/app/wrapper';
+import { getSession } from '~/session.server';
 
-export async function clientLoader() {
-  if (!isAuthenticated()) {
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  if (!session.has('token')) {
     return redirect('/login');
   }
 
-  const result = await safeFetch('/post', {}, postListResponse);
+  const result = await safeFetch(
+    { endpoint: '/post' },
+    postListResponse,
+    postErrorResponse,
+    session.get('token'),
+  );
 
   if (result.ok === false) {
     return result.error;

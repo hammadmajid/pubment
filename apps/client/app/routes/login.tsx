@@ -1,36 +1,31 @@
 import { GalleryVerticalEnd } from 'lucide-react';
-import { Link, redirect } from 'react-router';
-import { LoginForm } from '~/components/login-form';
-import { isAuthenticated } from '~/lib/auth';
-import { Skeleton } from '~/components/ui/skeleton';
+import { data, Form, Link, redirect } from 'react-router';
+import type { Route } from './+types/login';
+import { getSession, commitSession } from '~/session.server';
+import {
+  loginResponse,
+  loginSchema,
+  userErrorResponse,
+} from '@repo/schemas/user';
+import { safeFetch } from '~/lib/fetch';
+import { Label } from '~/components/ui/label';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 
-export async function clientLoader() {
-  if (isAuthenticated()) {
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  if (session.has('token')) {
     return redirect('/feed');
   }
-}
 
-export function HydrateFallback() {
-  return (
-    <div className='grid min-h-svh lg:grid-cols-2'>
-      <div className='flex flex-col gap-4 p-6 md:p-10'>
-        <div className='flex justify-center gap-2 md:justify-start'>
-          <Skeleton className='size-6 rounded-md' />
-          <Skeleton className='h-6 w-24 rounded' />
-        </div>
-        <div className='flex flex-1 items-center justify-center'>
-          <div className='w-full max-w-xs space-y-4'>
-            <Skeleton className='h-8 w-full rounded' />
-            <Skeleton className='h-10 w-full rounded' />
-            <Skeleton className='h-10 w-full rounded' />
-            <Skeleton className='h-10 w-full rounded' />
-          </div>
-        </div>
-      </div>
-      <div className='bg-muted relative hidden lg:block'>
-        <Skeleton className='absolute inset-0 h-full w-full rounded-none' />
-      </div>
-    </div>
+  return data(
+    { error: session.get('error') },
+    {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    },
   );
 }
 
@@ -45,7 +40,9 @@ export function meta() {
   ];
 }
 
-export default function Login() {
+export default function Login({ loaderData }: Route.ComponentProps) {
+  const { error } = loaderData;
+
   return (
     <div className='grid min-h-svh lg:grid-cols-2'>
       <div className='flex flex-col gap-4 p-6 md:p-10'>
@@ -59,7 +56,45 @@ export default function Login() {
         </div>
         <div className='flex flex-1 items-center justify-center'>
           <div className='w-full max-w-xs'>
-            <LoginForm />
+            <Form method='post' className='flex flex-col gap-6'>
+              <div className='flex flex-col items-center gap-2 text-center'>
+                <h1 className='text-2xl font-bold'>Login to your account</h1>
+                <p className='text-muted-foreground text-sm text-balance'>
+                  Enter your credentials below to login to your account
+                </p>
+              </div>
+              <div className='grid gap-6'>
+                <p>{error}</p>
+                <div className='grid gap-3'>
+                  <Label>Username</Label>
+                  <Input
+                    id='username'
+                    name='username'
+                    placeholder='johnd'
+                    required
+                  />
+                </div>
+                <div className='grid gap-3'>
+                  <Label>Password</Label>
+                  <Input
+                    id='password'
+                    name='password'
+                    placeholder='••••••••'
+                    type='password'
+                    required
+                  />
+                </div>
+                <Button type='submit' className='w-full'>
+                  Login
+                </Button>
+              </div>
+              <div className='text-center text-sm'>
+                Don&apos;t have an account?{' '}
+                <Link to='/register' className='underline underline-offset-4'>
+                  Sign up
+                </Link>
+              </div>
+            </Form>
           </div>
         </div>
       </div>
@@ -72,4 +107,53 @@ export default function Login() {
       </div>
     </div>
   );
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  const form = await request.formData();
+  const username = form.get('username');
+  const password = form.get('password');
+
+  const { success, data, error } = await loginSchema.safeParseAsync({
+    username,
+    password,
+  });
+
+  if (!success) {
+    session.flash('error', error.message.toString());
+
+    return redirect('/login', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  const result = await safeFetch(
+    { endpoint: '/user/login', body: data },
+    loginResponse,
+    userErrorResponse,
+  );
+
+  if (result.ok !== true) {
+    session.flash('error', result.error.message);
+
+    return redirect('/login', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  const { userId, token } = result.value;
+  session.set('token', token);
+  session.set('userId', userId);
+
+  return redirect('/feed', {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
