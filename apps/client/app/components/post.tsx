@@ -17,34 +17,32 @@ interface PostProps {
 }
 
 export function Post({ post, isClickable = false }: PostProps) {
-  const clickableContent = (
-    <>
-      <CardHeader>
-        <CardTitle>
-          {post.author.name} (@{post.author.username})
-        </CardTitle>
-        <CardDescription>
-          {getRelativeTime(post.createdAt)}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className='whitespace-pre-line mb-4'>{post.content}</div>
-      </CardContent>
-    </>
-  );
-
   return (
     <Card key={post._id}>
+      <CardHeader>
+        <CardTitle>
+          <Link to={`/user/${post.author.username}`}>
+            {post.author.name} (@{post.author.username})
+          </Link>
+        </CardTitle>
+        <CardDescription>{getRelativeTime(post.createdAt)}</CardDescription>
+      </CardHeader>
+
       {isClickable ? (
         <Link
           to={`/post/${post._id}`}
           className='block no-underline text-inherit'
         >
-          {clickableContent}
+          <CardContent>
+            <div className='whitespace-pre-line mb-4'>{post.content}</div>
+          </CardContent>
         </Link>
       ) : (
-        clickableContent
+        <CardContent>
+          <div className='whitespace-pre-line mb-4'>{post.content}</div>
+        </CardContent>
       )}
+
       <CardContent className='pt-0'>
         <div className='flex items-center gap-4 mt-2'>
           <button
@@ -55,14 +53,14 @@ export function Post({ post, isClickable = false }: PostProps) {
             <Heart className='w-5 h-5' strokeWidth={2} />
             <span className='text-sm'>{post.likes.length}</span>
           </button>
-          <button
-            type='button'
+          <Link
+            to={`/post/${post._id}`}
             className='flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors'
             aria-label='Comment on post'
           >
             <MessageCircle className='w-5 h-5' strokeWidth={2} />
             <span className='text-sm'>Comment</span>
-          </button>
+          </Link>
         </div>
       </CardContent>
     </Card>
