@@ -6,6 +6,7 @@ export type ApiEndpoint =
   | `/user/${string}`
   | '/post'
   | `/post/${string}`
+  | `/post/user/${string}`
   | '/post/create'
   | `/post/${string}/like`
   | `/post/${string}/likes`

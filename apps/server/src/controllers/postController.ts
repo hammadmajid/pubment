@@ -80,7 +80,7 @@ const postController = {
       if (
         error instanceof mongoose.Error &&
         error.name === 'MongoServerError' &&
-        ((error as unknown) as { code: number }).code === 11000
+        (error as unknown as { code: number }).code === 11000
       ) {
         res.status(409).json(
           postErrorResponse.parse({
@@ -120,6 +120,59 @@ const postController = {
         .skip(skip)
         .limit(limit);
       const total = await Post.countDocuments();
+      res.status(200).json(
+        postListResponse.parse({
+          success: true,
+          data: posts.map(normalizePost),
+          pagination: {
+            page,
+            limit,
+            total,
+            pages: Math.ceil(total / limit),
+          },
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  getAllByUsername: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { username } = req.params;
+      if (!username || typeof username !== 'string') {
+        res.status(400).json(
+          postErrorResponse.parse({
+            success: false,
+            message: 'Invalid username format',
+          }),
+        );
+        return;
+      }
+      const User = mongoose.model('User');
+      const user = await User.findOne({ username }).select('_id');
+      if (!user) {
+        res.status(404).json(
+          postErrorResponse.parse({
+            success: false,
+            message: 'User not found',
+          }),
+        );
+        return;
+      }
+      const page = Number.parseInt(req.query.page as string) || 1;
+      const limit = Number.parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      const posts = await Post.find({ author: user._id })
+        .populate('author', 'username name profilePicture')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+      const total = await Post.countDocuments({ author: user._id });
       res.status(200).json(
         postListResponse.parse({
           success: true,

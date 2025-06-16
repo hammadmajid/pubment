@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import AppWrapper from '~/components/app/wrapper';
 import { getSession } from '~/session.server';
+import { postErrorResponse, postListResponse } from '@repo/schemas/post';
+import { Post } from '~/components/post';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -18,24 +20,39 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   const username = params.username;
-  const result = await safeFetch(
+  const userDataResult = await safeFetch(
     { endpoint: `/user/${username}` },
     publicUserSuccessResponse,
     userErrorResponse,
   );
 
-  if (!result.ok) {
+  if (!userDataResult.ok) {
+    return redirect('/404');
+  }
+
+  const userPostResult = await safeFetch(
+    {
+      endpoint: `/post/user/${username}`,
+    },
+    postListResponse,
+    postErrorResponse,
+    session.get('token'),
+  );
+
+  if (userPostResult.ok === false) {
     return redirect('/404');
   }
 
   return {
     username: session.get('username'),
-    data: result.value,
+    user: userDataResult.value.user,
+    posts: userPostResult.value,
   };
 }
 
 export default function Component({ loaderData }: Route.ComponentProps) {
-  const user = loaderData.data.user;
+  const user = loaderData.user;
+  const posts = loaderData.posts;
 
   const getInitials = (name: string) => {
     return name
@@ -48,7 +65,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 
   return (
     <AppWrapper username={loaderData.username}>
-      <div className='px-8 py-2'>
+      <div className='px-8 py-2 space-y-8'>
         <Card className='w-full mx-auto'>
           <CardHeader className='text-center pb-4 flex items-center justify-start gap-8'>
             <div className='flex justify-center mb-4'>
@@ -75,6 +92,17 @@ export default function Component({ loaderData }: Route.ComponentProps) {
             </CardContent>
           )}
         </Card>
+        <div>
+          {posts.data.length === 0 ? (
+            <div className='text-center text-muted-foreground'>
+              No posts yet.
+            </div>
+          ) : (
+            posts.data.map((post) => (
+              <Post key={post._id} isClickable={true} post={post} />
+            ))
+          )}
+        </div>
       </div>
     </AppWrapper>
   );
