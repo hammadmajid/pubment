@@ -1,4 +1,6 @@
-import type { ZodType as ZodSchema, ZodType, ZodTypeDef } from 'zod';
+import type { ZodType, ZodTypeDef } from 'zod';
+
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
 
 export type ApiEndpoint =
   | '/user/register'
@@ -42,12 +44,12 @@ export async function safeFetch<
   TEndpoint extends ApiEndpoint,
 >(
   request: ApiRequest<TEndpoint>,
-  successSchema: ZodSchema<TSuccess> | ZodType<TSuccess, ZodTypeDef, unknown>,
-  errorSchema: ZodSchema<TError> | ZodType<TError, ZodTypeDef, unknown>,
+  successSchema: ZodType<TSuccess> | ZodType<TSuccess, ZodTypeDef, unknown>,
+  errorSchema: ZodType<TError> | ZodType<TError, ZodTypeDef, unknown>,
   token?: string,
 ): Promise<Result<TSuccess>> {
   try {
-    const url = `http://localhost:3000${request.endpoint}`;
+    const url = `${API_BASE_URL}${request.endpoint}`;
 
     // Determine if this is a POST endpoint
     const isPostEndpoint =
