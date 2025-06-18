@@ -52,7 +52,7 @@ export default function Feed({ loaderData }: Route.ComponentProps) {
         <div className='text-center text-muted-foreground'>No posts yet.</div>
       ) : (
         loaderData.data.data.map((post) => (
-          <Post key={post._id} isClickable={true} post={post} />
+          <Post key={post._id} isClickable={true} post={post} username={loaderData.username} />
         ))
       )}
     </div>

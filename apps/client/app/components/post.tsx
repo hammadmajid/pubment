@@ -12,16 +12,23 @@ import { Link } from 'react-router';
 import { getRelativeTime } from '~/lib/utils';
 
 interface PostProps {
+  username: string;
   post: z.infer<typeof postData>;
   isClickable?: boolean;
 }
 
-export function Post({ post, isClickable = false }: PostProps) {
+export function Post({ username, post, isClickable = false }: PostProps) {
   return (
     <Card key={post._id}>
       <CardHeader>
         <CardTitle>
-          <Link to={`/user/${post.author.username}`}>
+          <Link
+            to={
+              post.author.username === username
+                ? '/profile'
+                : `/user/${post.author.username}`
+            }
+          >
             {post.author.name} (@{post.author.username})
           </Link>
         </CardTitle>
