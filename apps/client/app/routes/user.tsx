@@ -4,7 +4,7 @@ import {
   publicUserSuccessResponse,
   userErrorResponse,
 } from '@repo/schemas/user';
-import { Form, redirect } from 'react-router';
+import { useFetcher, redirect } from 'react-router';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { commitSession, getSession } from '~/session.server';
@@ -14,6 +14,7 @@ import {
 } from '@repo/schemas/follow';
 import { Post } from '~/components/post';
 import { Button } from '~/components/ui/button';
+import { Loader2Icon } from 'lucide-react';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -61,6 +62,9 @@ export function meta({ params }: Route.MetaArgs) {
 }
 
 export default function UserPage({ loaderData }: Route.ComponentProps) {
+  const fetcher = useFetcher();
+  const busy = fetcher.state !== 'idle';
+
   const user = loaderData.user;
   const posts = loaderData.posts;
   const following = loaderData.following;
@@ -102,12 +106,16 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
           <div>
-            <Form method='post'>
+            <fetcher.Form method='post'>
               <input type='hidden' name='username' value={user.username} />
-              <Button type='submit' variant='outline' size='lg'>
-                {isFollowing ? 'Unfollow' : 'Follow'}
+              <Button type='submit' variant='outline' size='lg' disabled={busy}>
+                {busy ? (
+                  <Loader2Icon className='animate-spin' />
+                ) : (
+                  <span>{isFollowing ? 'Unfollow' : 'Follow'}</span>
+                )}
               </Button>
-            </Form>
+            </fetcher.Form>
           </div>
         </CardHeader>
         {user.bio && (
