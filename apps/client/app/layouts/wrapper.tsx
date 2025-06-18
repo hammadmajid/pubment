@@ -1,4 +1,3 @@
-import type React from 'react';
 import { AppSidebar } from '~/components/app/sidebar';
 import {
   SidebarInset,
@@ -6,8 +5,11 @@ import {
   SidebarTrigger,
 } from '~/components/ui/sidebar';
 import { Outlet } from 'react-router';
+import { useNavigation } from 'react-router';
 
 export default function AppWrapper() {
+  const navigation = useNavigation();
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -15,7 +17,13 @@ export default function AppWrapper() {
         <header className='flex items-center justify-between p-4'>
           <SidebarTrigger />
         </header>
-        <main>
+        <main
+          className={
+            navigation.state === 'loading'
+              ? 'opacity-30 pointer-events-none transition-opacity'
+              : 'transition-opacity'
+          }
+        >
           <Outlet />
         </main>
       </SidebarInset>
