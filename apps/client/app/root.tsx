@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
 } from 'react-router';
+import { Alert, AlertTitle, AlertDescription } from './components/ui/alert';
 
 import type { Route } from './+types/root';
 import './app.css';
@@ -62,14 +63,21 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className='pt-16 p-4 container mx-auto'>
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className='w-full p-4 overflow-x-auto'>
-          <code>{stack}</code>
-        </pre>
-      )}
+    <main className='flex items-center justify-center min-h-[60vh]'>
+      <Alert
+        variant='destructive'
+        className='max-w-lg w-full mx-auto text-left'
+      >
+        <AlertTitle className='text-2xl mb-2'>{message}</AlertTitle>
+        <AlertDescription>
+          <p>{details}</p>
+          {stack && (
+            <pre className='w-full p-4 overflow-x-auto mt-4 bg-muted rounded'>
+              <code>{stack}</code>
+            </pre>
+          )}
+        </AlertDescription>
+      </Alert>
     </main>
   );
 }
