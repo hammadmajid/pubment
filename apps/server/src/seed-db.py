@@ -87,3 +87,25 @@ for i, user in enumerate(users):
         print(f"{user['username']} liked/unliked post {post['postId']}: {data.get('message')}")
 
 print("Database seeded!")
+
+# 6. Randomly follow each other
+num_follows = len(users) * 2  # Each user will follow about 2 others on average
+follows = set()
+for _ in range(num_follows):
+    follower_idx = random.randint(0, len(users) - 1)
+    following_idx = random.randint(0, len(users) - 1)
+    if follower_idx == following_idx:
+        continue  # Skip self-follow
+    follower = users[follower_idx]
+    following = users[following_idx]
+    key = (follower["userId"], following["userId"])
+    if key in follows:
+        continue  # Skip duplicate follow
+    follows.add(key)
+    resp = requests.post(
+        f"{BASE_URL}/follow/toggle",
+        json={"targetUsername": following["username"]},
+        headers={"Authorization": f"Bearer {tokens[follower_idx]}"},
+    )
+    data = resp.json()
+    print(f"{follower['username']} followed/unfollowed {following['username']}: {data.get('message')}")
