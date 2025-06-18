@@ -18,46 +18,42 @@ import {
   SidebarRail,
 } from '~/components/ui/sidebar';
 import { Button } from '~/components/ui/button';
-import { Link } from 'react-router';
+import { NavLink } from 'react-router';
 
-interface AppSidebarProps {
-  username: string;
-}
+const navigationItems = [
+  {
+    title: 'Feed',
+    url: '/feed',
+    icon: Home,
+  },
+  {
+    title: 'Search',
+    url: '/search',
+    icon: Search,
+  },
+  {
+    title: 'Profile',
+    url: `/profile/`,
+    icon: User,
+  },
+  {
+    title: 'Settings',
+    url: '/settings',
+    icon: Settings,
+  },
+];
 
-export function AppSidebar({ username }: AppSidebarProps) {
-  const navigationItems = [
-    {
-      title: 'Feed',
-      url: '/feed',
-      icon: Home,
-    },
-    {
-      title: 'Search',
-      url: '/search',
-      icon: Search,
-    },
-    {
-      title: 'Profile',
-      url: `/user/${username}`,
-      icon: User,
-    },
-    {
-      title: 'Settings',
-      url: '/settings',
-      icon: Settings,
-    },
-  ];
-
+export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size='lg' asChild>
-              <Link to='/' className='font-semibold'>
+              <NavLink to='/' className='font-semibold'>
                 <GalleryVerticalEnd className='size-4' />
                 <span>SocialApp</span>
-              </Link>
+              </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -70,10 +66,10 @@ export function AppSidebar({ username }: AppSidebarProps) {
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className='py-6'>
-                    <Link to={item.url}>
+                    <NavLink to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </Link>
+                    </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

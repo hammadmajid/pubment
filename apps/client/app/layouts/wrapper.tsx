@@ -5,22 +5,18 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '~/components/ui/sidebar';
+import { Outlet } from 'react-router';
 
-interface AppWrapperProps {
-  username: string;
-  children: React.ReactElement;
-}
-
-export default function AppWrapper({ username, children }: AppWrapperProps) {
+export default function AppWrapper() {
   return (
     <SidebarProvider>
-      <AppSidebar username={username} />
+      <AppSidebar />
       <SidebarInset>
         <header className='flex items-center justify-between p-4'>
           <SidebarTrigger />
         </header>
         <main>
-          {children}
+          <Outlet />
         </main>
       </SidebarInset>
     </SidebarProvider>

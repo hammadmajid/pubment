@@ -3,7 +3,6 @@ import { safeFetch } from '~/lib/fetch';
 import { postErrorResponse, postListResponse } from '@repo/schemas/post';
 import type { Route } from './+types/feed';
 import { Post } from '~/components/post';
-import AppWrapper from '~/components/app/wrapper';
 import { getSession } from '~/session.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -40,16 +39,14 @@ export default function Feed({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <AppWrapper username={loaderData.username}>
-      <div className='flex flex-col gap-6 px-8 py-2'>
-        {loaderData.data.data.length === 0 ? (
-          <div className='text-center text-muted-foreground'>No posts yet.</div>
-        ) : (
-          loaderData.data.data.map((post) => (
-            <Post key={post._id} isClickable={true} post={post} />
-          ))
-        )}
-      </div>
-    </AppWrapper>
+    <div className='flex flex-col gap-6 px-8 py-2'>
+      {loaderData.data.data.length === 0 ? (
+        <div className='text-center text-muted-foreground'>No posts yet.</div>
+      ) : (
+        loaderData.data.data.map((post) => (
+          <Post key={post._id} isClickable={true} post={post} />
+        ))
+      )}
+    </div>
   );
 }

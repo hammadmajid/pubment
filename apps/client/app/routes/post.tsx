@@ -3,7 +3,6 @@ import type { Route } from './+types/post';
 import { redirect } from 'react-router';
 import { safeFetch } from '~/lib/fetch';
 import { postErrorResponse, postResponse } from '@repo/schemas/post';
-import AppWrapper from '~/components/app/wrapper';
 import { Post } from '~/components/post';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -46,10 +45,8 @@ export function meta() {
 
 export default function PostDetails({ loaderData }: Route.ComponentProps) {
   return (
-    <AppWrapper username={loaderData.username}>
-      <div className='flex flex-col gap-6 px-8 py-2'>
-        <Post post={loaderData.data} />
-      </div>
-    </AppWrapper>
+    <div className='flex flex-col gap-6 px-8 py-2'>
+      <Post post={loaderData.data} />
+    </div>
   );
 }

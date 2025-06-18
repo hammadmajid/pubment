@@ -1,6 +1,5 @@
 import { getSession } from '~/session.server';
 import type { Route } from './+types/search';
-import AppWrapper from '~/components/app/wrapper';
 import { redirect } from 'react-router';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -17,9 +16,5 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Search({ loaderData }: Route.ComponentProps) {
-  return (
-    <AppWrapper username={loaderData.username}>
-      <div className='px-8 py-2'></div>
-    </AppWrapper>
-  );
+  return <div className='px-8 py-2'></div>;
 }
