@@ -19,6 +19,8 @@ export const userSummary = z.object({
   profilePicture: z.string().nullable().optional(),
 });
 
+export type UserSummary = z.infer<typeof userSummary>;
+
 export const userListResponse = z.object({
   success: z.literal(true),
   data: z.array(userSummary),

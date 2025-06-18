@@ -15,6 +15,7 @@ import {
 import { Post } from '~/components/post';
 import { Button } from '~/components/ui/button';
 import { Loader2Icon } from 'lucide-react';
+import FollowList from '~/components/app/follow-list';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -43,8 +44,23 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     username: session.get('username'),
     user: userDataResult.value.user,
     posts: userDataResult.value.user.posts,
-    followers: userDataResult.value.user.followers,
-    following: userDataResult.value.user.following,
+    // assert these to prevent typescript from complaining
+    followers: userDataResult.value.user.followers.map((f) => {
+      return {
+        _id: f._id!,
+        username: f.username!,
+        name: f.name!,
+        profilePicture: f.profilePicture!,
+      };
+    }),
+    following: userDataResult.value.user.following.map((f) => {
+      return {
+        _id: f._id!,
+        username: f.username!,
+        name: f.name!,
+        profilePicture: f.profilePicture!,
+      };
+    }),
     isFollowing,
     headers: {
       'Set-Cookie': await commitSession(session),
@@ -99,10 +115,7 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
             <div className='space-y-1'>
               <h2 className='text-2xl font-bold'>{user.name}</h2>
               <p className='text-muted-foreground'>@{user.username}</p>
-              <div className='flex gap-4 justify-center mt-2'>
-                <span className='text-sm'>{followers.length} Followers</span>
-                <span className='text-sm'>{following.length} Following</span>
-              </div>
+              <FollowList followers={followers} followings={following} />
             </div>
           </div>
           <div>

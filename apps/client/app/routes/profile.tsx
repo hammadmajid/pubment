@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { commitSession, getSession } from '~/session.server';
 import { Post } from '~/components/post';
+import FollowList from '~/components/app/follow-list';
 
 export function meta() {
   return [{ title: 'Profile | Social Media' }];
@@ -35,8 +36,23 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return {
     user: userDataResult.value.user,
     posts: userDataResult.value.user.posts,
-    followers: userDataResult.value.user.followers,
-    following: userDataResult.value.user.following,
+    // assert these to prevent typescript from complaining
+    followers: userDataResult.value.user.followers.map((f) => {
+      return {
+        _id: f._id!,
+        username: f.username!,
+        name: f.name!,
+        profilePicture: f.profilePicture!,
+      };
+    }),
+    following: userDataResult.value.user.following.map((f) => {
+      return {
+        _id: f._id!,
+        username: f.username!,
+        name: f.name!,
+        profilePicture: f.profilePicture!,
+      };
+    }),
     header: {
       'Set-Cookie': await commitSession(session),
     },
@@ -46,6 +62,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export default function Component({ loaderData }: Route.ComponentProps) {
   const user = loaderData.user;
   const posts = loaderData.posts;
+  const followers = loaderData.followers;
+  const following = loaderData.following;
 
   const getInitials = (name: string) => {
     return name
@@ -75,14 +93,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
             <div className='space-y-1'>
               <h2 className='text-2xl font-bold'>{user.name}</h2>
               <p className='text-muted-foreground'>@{user.username}</p>
-              <div className='flex gap-4 justify-center mt-2'>
-                <span className='text-sm'>
-                  {loaderData.followers.length} Followers
-                </span>
-                <span className='text-sm'>
-                  {loaderData.following.length} Following
-                </span>
-              </div>
+              <FollowList followers={followers} followings={following} />
             </div>
           </div>
         </CardHeader>
