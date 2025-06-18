@@ -2,7 +2,7 @@ import z from 'zod';
 
 // Request body for toggling follow/unfollow
 export const toggleFollowRequest = z.object({
-  targetUserId: z.string(),
+  targetUsername: z.string(),
 });
 
 // Response for toggle follow/unfollow

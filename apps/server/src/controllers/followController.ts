@@ -19,26 +19,39 @@ const followController = {
       const userId = req.user?.id;
       const validationResult = toggleFollowRequest.safeParse(req.body);
       if (!userId || !validationResult.success) {
-        res.status(400).json(followErrorResponse.parse({
-          success: false,
-          message: 'Invalid user ID or request body',
-          errors: validationResult.success ? undefined : validationResult.error.errors,
-        }));
+        res.status(400).json(
+          followErrorResponse.parse({
+            success: false,
+            message: 'Invalid user ID or request body',
+            errors: validationResult.success
+              ? undefined
+              : validationResult.error.errors,
+          }),
+        );
         return;
       }
-      const { targetUserId } = validationResult.data;
-      if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
-        res.status(400).json(followErrorResponse.parse({
-          success: false,
-          message: 'Invalid target user ID',
-        }));
+      const { targetUsername } = validationResult.data;
+      // Find the target user by username
+      const targetUser = await mongoose
+        .model('User')
+        .findOne({ username: targetUsername });
+      if (!targetUser) {
+        res.status(404).json(
+          followErrorResponse.parse({
+            success: false,
+            message: 'Target user not found',
+          }),
+        );
         return;
       }
+      const targetUserId = targetUser._id.toString();
       if (userId === targetUserId) {
-        res.status(400).json(followErrorResponse.parse({
-          success: false,
-          message: 'Cannot follow yourself',
-        }));
+        res.status(400).json(
+          followErrorResponse.parse({
+            success: false,
+            message: 'Cannot follow yourself',
+          }),
+        );
         return;
       }
       const existing = await Follow.findOne({
@@ -47,16 +60,20 @@ const followController = {
       });
       if (existing) {
         await Follow.deleteOne({ _id: existing._id });
-        res.status(200).json(toggleFollowResponse.parse({
-          success: true,
-          message: 'Unfollowed user',
-        }));
+        res.status(200).json(
+          toggleFollowResponse.parse({
+            success: true,
+            message: 'Unfollowed user',
+          }),
+        );
       } else {
         await Follow.create({ follower: userId, following: targetUserId });
-        res.status(200).json(toggleFollowResponse.parse({
-          success: true,
-          message: 'Followed user',
-        }));
+        res.status(200).json(
+          toggleFollowResponse.parse({
+            success: true,
+            message: 'Followed user',
+          }),
+        );
       }
     } catch (error) {
       next(error);
@@ -71,19 +88,23 @@ const followController = {
     try {
       const { userId } = req.params;
       if (!mongoose.Types.ObjectId.isValid(userId)) {
-        res.status(400).json(followErrorResponse.parse({
-          success: false,
-          message: 'Invalid user ID',
-        }));
+        res.status(400).json(
+          followErrorResponse.parse({
+            success: false,
+            message: 'Invalid user ID',
+          }),
+        );
         return;
       }
       const following = await Follow.find({ follower: userId })
         .populate('following', 'username name profilePicture')
         .sort({ createdAt: -1 });
-      res.status(200).json(userListResponse.parse({
-        success: true,
-        data: following.map((f) => normalizeUser(f.following)),
-      }));
+      res.status(200).json(
+        userListResponse.parse({
+          success: true,
+          data: following.map((f) => normalizeUser(f.following)),
+        }),
+      );
     } catch (error) {
       next(error);
     }
@@ -97,19 +118,23 @@ const followController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        res.status(401).json(followErrorResponse.parse({
-          success: false,
-          message: 'Unauthorized',
-        }));
+        res.status(401).json(
+          followErrorResponse.parse({
+            success: false,
+            message: 'Unauthorized',
+          }),
+        );
         return;
       }
       const followers = await Follow.find({ following: userId })
         .populate('follower', 'username name profilePicture')
         .sort({ createdAt: -1 });
-      res.status(200).json(userListResponse.parse({
-        success: true,
-        data: followers.map((f) => normalizeUser(f.follower)),
-      }));
+      res.status(200).json(
+        userListResponse.parse({
+          success: true,
+          data: followers.map((f) => normalizeUser(f.follower)),
+        }),
+      );
     } catch (error) {
       next(error);
     }
@@ -123,19 +148,23 @@ const followController = {
     try {
       const { userId } = req.params;
       if (!mongoose.Types.ObjectId.isValid(userId)) {
-        res.status(400).json(followErrorResponse.parse({
-          success: false,
-          message: 'Invalid user ID',
-        }));
+        res.status(400).json(
+          followErrorResponse.parse({
+            success: false,
+            message: 'Invalid user ID',
+          }),
+        );
         return;
       }
       const followers = await Follow.find({ following: userId })
         .populate('follower', 'username name profilePicture')
         .sort({ createdAt: -1 });
-      res.status(200).json(userListResponse.parse({
-        success: true,
-        data: followers.map((f) => normalizeUser(f.follower)),
-      }));
+      res.status(200).json(
+        userListResponse.parse({
+          success: true,
+          data: followers.map((f) => normalizeUser(f.follower)),
+        }),
+      );
     } catch (error) {
       next(error);
     }
@@ -149,19 +178,23 @@ const followController = {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        res.status(401).json(followErrorResponse.parse({
-          success: false,
-          message: 'Unauthorized',
-        }));
+        res.status(401).json(
+          followErrorResponse.parse({
+            success: false,
+            message: 'Unauthorized',
+          }),
+        );
         return;
       }
       const following = await Follow.find({ follower: userId })
         .populate('following', 'username name profilePicture')
         .sort({ createdAt: -1 });
-      res.status(200).json(userListResponse.parse({
-        success: true,
-        data: following.map((f) => normalizeUser(f.following)),
-      }));
+      res.status(200).json(
+        userListResponse.parse({
+          success: true,
+          data: following.map((f) => normalizeUser(f.following)),
+        }),
+      );
     } catch (error) {
       next(error);
     }
