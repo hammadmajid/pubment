@@ -15,5 +15,6 @@ export default [
     route('/search', 'routes/search.tsx'),
     route('/settings', 'routes/settings.tsx'),
     route('/post/:postId', 'routes/post.tsx'),
+    route('/profile', 'routes/profile.tsx'),
   ]),
 ] satisfies RouteConfig;
