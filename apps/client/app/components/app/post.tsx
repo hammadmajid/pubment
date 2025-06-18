@@ -10,6 +10,7 @@ import { Heart, MessageCircle } from 'lucide-react';
 import { postData } from '@repo/schemas/post';
 import { Link } from 'react-router';
 import { getRelativeTime } from '~/lib/utils';
+import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
 
 interface PostProps {
   username: string;
@@ -20,19 +21,35 @@ interface PostProps {
 export function Post({ username, post, isClickable = false }: PostProps) {
   return (
     <Card key={post._id}>
-      <CardHeader>
-        <CardTitle>
-          <Link
-            to={
-              post.author.username === username
-                ? '/profile'
-                : `/user/${post.author.username}`
-            }
-          >
-            {post.author.name} (@{post.author.username})
-          </Link>
-        </CardTitle>
-        <CardDescription>{getRelativeTime(post.createdAt)}</CardDescription>
+      <CardHeader className='flex flex-row items-start justify-between'>
+        <div className='flex items-center gap-3'>
+          <Avatar>
+            <AvatarImage
+              src={post.author.profilePicture}
+              alt={post.author.name}
+            />
+            <AvatarFallback>{post.author.name?.[0] || '?'}</AvatarFallback>
+          </Avatar>
+          <div>
+            <CardTitle className='leading-tight'>
+              <Link
+                to={
+                  post.author.username === username
+                    ? '/profile'
+                    : `/user/${post.author.username}`
+                }
+              >
+                {post.author.name}
+              </Link>
+            </CardTitle>
+            <div className='text-xs text-muted-foreground mt-0.5'>
+              @{post.author.username}
+            </div>
+          </div>
+        </div>
+        <CardDescription className='text-xs text-muted-foreground mt-1 whitespace-nowrap'>
+          {getRelativeTime(post.createdAt)}
+        </CardDescription>
       </CardHeader>
 
       {isClickable ? (
