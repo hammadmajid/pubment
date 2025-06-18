@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { userSummary } from './follow.js';
+import { postData } from './post.js';
 
 // Username validation regex: starts with a lowercase letter, can contain lowercase letters, numbers, underscore, dot
 const usernameRegex = /^[a-z][a-z0-9._]*$/;
@@ -77,6 +79,9 @@ export const publicUserSchema = z.object({
   name: registrationSchema.shape.name,
   bio: registrationSchema.shape.bio.default(''),
   profilePicture: registrationSchema.shape.profilePicture.default(''),
+  followers: z.array(userSummary),
+  following: z.array(userSummary),
+  posts: z.array(postData),
 });
 
 export const publicUserSuccessResponse = z.object({

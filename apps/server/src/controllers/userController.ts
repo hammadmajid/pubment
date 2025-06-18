@@ -12,7 +12,9 @@ import {
 } from '@repo/schemas/user';
 import { comparePassword, generateSalt, hashPassword } from '../utils/crypto';
 import { generateToken } from '../utils/jwt';
-import { success } from 'zod/v4';
+import Follow from '../models/follow';
+import Post from '../models/post';
+import { normalizeUser, normalizePost } from '../utils/normalizations';
 
 const userController = {
   register: async (
@@ -226,6 +228,24 @@ const userController = {
         return;
       }
 
+      // Fetch followers (users who follow this user)
+      const followersDocs = await Follow.find({ following: user._id }).populate(
+        'follower',
+      );
+      const followers = followersDocs.map((f) => normalizeUser(f.follower));
+
+      // Fetch following (users this user follows)
+      const followingDocs = await Follow.find({ follower: user._id }).populate(
+        'following',
+      );
+      const following = followingDocs.map((f) => normalizeUser(f.following));
+
+      // Fetch posts by this user
+      const postsDocs = await Post.find({ author: user._id })
+        .populate('author')
+        .sort({ createdAt: -1 });
+      const posts = postsDocs.map((post) => normalizePost(post));
+
       res.status(200).json(
         publicUserSuccessResponse.parse({
           success: true,
@@ -235,6 +255,9 @@ const userController = {
             name: user.name,
             bio: user.bio || '',
             profilePicture: user.profilePicture || '',
+            followers,
+            following,
+            posts,
           }),
         }),
       );
