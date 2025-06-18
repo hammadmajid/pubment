@@ -21,11 +21,6 @@ export const userSummary = z.object({
 
 export type UserSummary = z.infer<typeof userSummary>;
 
-export const userListResponse = z.object({
-  success: z.literal(true),
-  data: z.array(userSummary),
-});
-
 // Error response
 export const followErrorResponse = z.object({
   success: z.literal(false),

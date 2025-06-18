@@ -4,10 +4,8 @@ import Follow from '../models/follow';
 import {
   toggleFollowRequest,
   toggleFollowResponse,
-  userListResponse,
   followErrorResponse,
 } from '@repo/schemas/follow';
-import { normalizeUser } from '../utils/normalizations';
 
 const followController = {
   toggleFollow: async (
@@ -75,126 +73,6 @@ const followController = {
           }),
         );
       }
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  getFollowingByUserId: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const { userId } = req.params;
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-        res.status(400).json(
-          followErrorResponse.parse({
-            success: false,
-            message: 'Invalid user ID',
-          }),
-        );
-        return;
-      }
-      const following = await Follow.find({ follower: userId })
-        .populate('following', 'username name profilePicture')
-        .sort({ createdAt: -1 });
-      res.status(200).json(
-        userListResponse.parse({
-          success: true,
-          data: following.map((f) => normalizeUser(f.following)),
-        }),
-      );
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  getFollowersOfCurrentUser: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        res.status(401).json(
-          followErrorResponse.parse({
-            success: false,
-            message: 'Unauthorized',
-          }),
-        );
-        return;
-      }
-      const followers = await Follow.find({ following: userId })
-        .populate('follower', 'username name profilePicture')
-        .sort({ createdAt: -1 });
-      res.status(200).json(
-        userListResponse.parse({
-          success: true,
-          data: followers.map((f) => normalizeUser(f.follower)),
-        }),
-      );
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  getFollowersByUserId: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const { userId } = req.params;
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-        res.status(400).json(
-          followErrorResponse.parse({
-            success: false,
-            message: 'Invalid user ID',
-          }),
-        );
-        return;
-      }
-      const followers = await Follow.find({ following: userId })
-        .populate('follower', 'username name profilePicture')
-        .sort({ createdAt: -1 });
-      res.status(200).json(
-        userListResponse.parse({
-          success: true,
-          data: followers.map((f) => normalizeUser(f.follower)),
-        }),
-      );
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  getFollowingOfCurrentUser: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        res.status(401).json(
-          followErrorResponse.parse({
-            success: false,
-            message: 'Unauthorized',
-          }),
-        );
-        return;
-      }
-      const following = await Follow.find({ follower: userId })
-        .populate('following', 'username name profilePicture')
-        .sort({ createdAt: -1 });
-      res.status(200).json(
-        userListResponse.parse({
-          success: true,
-          data: following.map((f) => normalizeUser(f.following)),
-        }),
-      );
     } catch (error) {
       next(error);
     }
