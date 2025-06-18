@@ -139,7 +139,7 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
           </CardContent>
         )}
       </Card>
-      <div className='space-y-4'>
+      <div className='space-y-3'>
         {posts.length === 0 ? (
           <div className='text-center text-muted-foreground'>No posts yet.</div>
         ) : (

@@ -99,13 +99,13 @@ export default function Component({ loaderData }: Route.ComponentProps) {
         </CardHeader>
         {user.bio && (
           <CardContent className='pt-0'>
-            <p className='text-center text-sm leading-relaxed text-muted-foreground'>
+            <p className='text-sm leading-relaxed text-muted-foreground'>
               {user.bio}
             </p>
           </CardContent>
         )}
       </Card>
-      <div>
+      <div className='space-y-3'>
         {posts.length === 0 ? (
           <div className='text-center text-muted-foreground'>No posts yet.</div>
         ) : (
