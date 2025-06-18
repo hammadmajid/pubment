@@ -10,6 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { commitSession, getSession } from '~/session.server';
 import { Post } from '~/components/post';
 
+export function meta() {
+  return [{ title: 'Profile | Social Media' }];
+}
+
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
 

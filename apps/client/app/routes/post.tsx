@@ -33,9 +33,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   };
 }
 
-export function meta() {
+export function meta({ params }: Route.MetaArgs) {
   return [
-    { title: 'Post Details | Social Media' },
+    { title: `Post ${params.postId} | Social Media` },
     {
       name: 'description',
       content: 'View details of a specific post.',

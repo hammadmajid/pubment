@@ -5,6 +5,10 @@ import type { Route } from './+types/feed';
 import { Post } from '~/components/post';
 import { getSession } from '~/session.server';
 
+export function meta() {
+  return [{ title: 'Feed | Social Media' }];
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
 

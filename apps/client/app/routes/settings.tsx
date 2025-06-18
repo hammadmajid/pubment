@@ -3,6 +3,10 @@ import type { Route } from './+types/settings';
 import { Form, redirect } from 'react-router';
 import { Button } from '~/components/ui/button';
 
+export function meta() {
+  return [{ title: 'Settings | Social Media' }];
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
 
