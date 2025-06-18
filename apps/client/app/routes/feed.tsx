@@ -1,4 +1,4 @@
-import { redirect } from 'react-router';
+import { redirect, useNavigate, useSearchParams } from 'react-router';
 import { safeFetch } from '~/lib/fetch';
 import {
   postCreateResponse,
@@ -8,6 +8,15 @@ import {
 import type { Route } from './+types/feed';
 import { Post } from '~/components/post';
 import { commitSession, getSession } from '~/session.server';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from '~/components/ui/pagination';
 
 export function meta() {
   return [{ title: 'Feed | Social Media' }];
@@ -20,24 +29,41 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect('/login');
   }
 
+  // Get page from query params
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get('page') || '1', 10);
+
   const result = await safeFetch(
-    { endpoint: '/post' },
+    { endpoint: `/post?page=${page}` },
     postListResponse,
     postErrorResponse,
     session.get('token'),
   );
 
   if (result.ok === false) {
-    return result.error;
+    return redirect('/500', {
+      headers: {
+        'X-Error-Message': result.error.message,
+      },
+    });
   }
 
   return {
     username: session.get('username'),
     data: result.value,
+    page,
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
   };
 }
 
 export default function Feed({ loaderData }: Route.ComponentProps) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const page = loaderData.data.pagination.page || 1;
+  const pagination = loaderData.data.pagination;
+
   if (loaderData instanceof Error) {
     return (
       <div className='bg-red-100 text-red-700 border border-red-300 rounded-md p-4 mx-auto mt-8'>
@@ -46,14 +72,84 @@ export default function Feed({ loaderData }: Route.ComponentProps) {
     );
   }
 
+  const handlePageChange = (newPage: number) => {
+    searchParams.set('page', String(newPage));
+    navigate({ search: searchParams.toString() });
+  };
+
   return (
-    <div className='flex flex-col gap-6 px-8 py-2'>
+    <div className='flex flex-col gap-6 px-8 py-2 mb-12'>
       {loaderData.data.data.length === 0 ? (
         <div className='text-center text-muted-foreground'>No posts yet.</div>
       ) : (
         loaderData.data.data.map((post) => (
-          <Post key={post._id} isClickable={true} post={post} username={loaderData.username} />
+          <Post
+            key={post._id}
+            isClickable={true}
+            post={post}
+            username={loaderData.username}
+          />
         ))
+      )}
+      {pagination && pagination.pages > 1 && (
+        <Pagination className='mt-8'>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={
+                  page > 1 ? () => handlePageChange(page - 1) : undefined
+                }
+                aria-disabled={page === 1}
+                tabIndex={page === 1 ? -1 : 0}
+                to={`?page=${page - 1}`}
+              />
+            </PaginationItem>
+            {Array.from({ length: pagination.pages }).map((_, idx) => {
+              const p = idx + 1;
+              // Show first, last, current, and neighbors; ellipsis for gaps
+              if (
+                p === 1 ||
+                p === pagination.pages ||
+                Math.abs(p - page) <= 1
+              ) {
+                return (
+                  <PaginationItem key={p}>
+                    <PaginationLink
+                      isActive={p === page}
+                      onClick={() => handlePageChange(p)}
+                      to={`?page=${p}`}
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              }
+              if (
+                (p === page - 2 && page > 3) ||
+                (p === page + 2 && page < pagination.pages - 2)
+              ) {
+                return (
+                  <PaginationItem key={`ellipsis-${p}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                );
+              }
+              return null;
+            })}
+            <PaginationItem>
+              <PaginationNext
+                onClick={
+                  page < pagination.pages
+                    ? () => handlePageChange(page + 1)
+                    : undefined
+                }
+                aria-disabled={page === pagination.pages}
+                tabIndex={page === pagination.pages ? -1 : 0}
+                to={`?page=${page + 1}`}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
     </div>
   );
