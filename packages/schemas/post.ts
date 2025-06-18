@@ -1,4 +1,5 @@
 import z from 'zod';
+import { commentData } from './comment.js';
 
 export const postSchema = z.object({
   authorId: z.string(),
@@ -28,18 +29,23 @@ export const postCreateResponse = z.object({
 
 export const postResponse = z.object({
   success: z.literal(true),
-  data: postData,
+  data: z.object({
+    post: postData,
+    comments: z.array(commentData),
+  }),
 });
 
 export const postListResponse = z.object({
   success: z.literal(true),
   data: z.array(postData),
-  pagination: z.object({
-    page: z.number(),
-    limit: z.number(),
-    total: z.number(),
-    pages: z.number(),
-  }).optional(),
+  pagination: z
+    .object({
+      page: z.number(),
+      limit: z.number(),
+      total: z.number(),
+      pages: z.number(),
+    })
+    .optional(),
 });
 
 export const postLikeResponse = z.object({
@@ -55,12 +61,14 @@ export const postLikesListResponse = z.object({
   success: z.literal(true),
   data: z.object({
     postId: z.string(),
-    likes: z.array(z.object({
-      _id: z.string(),
-      username: z.string(),
-      name: z.string(),
-      profilePicture: z.string().nullable().optional(),
-    })),
+    likes: z.array(
+      z.object({
+        _id: z.string(),
+        username: z.string(),
+        name: z.string(),
+        profilePicture: z.string().nullable().optional(),
+      }),
+    ),
     totalLikes: z.number(),
   }),
   pagination: z.object({

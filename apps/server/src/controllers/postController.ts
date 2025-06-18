@@ -11,7 +11,11 @@ import {
   postLikesListResponse,
   postErrorResponse,
 } from '@repo/schemas/post';
-import { normalizePost, normalizeUser } from '../utils/normalizations';
+import {
+  normalizeComment,
+  normalizePost,
+  normalizeUser,
+} from '../utils/normalizations';
 
 const postController = {
   create: async (
@@ -219,10 +223,20 @@ const postController = {
         );
         return;
       }
+      // Fetch comments for the post
+      const Comment = mongoose.model('Comment');
+      const comments = await Comment.find({ post: id })
+        .populate('author', 'username name profilePicture')
+        .sort({ createdAt: 1 });
       res.status(200).json(
         postResponse.parse({
           success: true,
-          data: normalizePost(post),
+          data: {
+            post: normalizePost(post),
+            comments: Array.isArray(comments)
+              ? comments.map(normalizeComment)
+              : [],
+          },
         }),
       );
     } catch (error) {
