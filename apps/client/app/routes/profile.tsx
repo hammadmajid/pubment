@@ -75,7 +75,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
   };
 
   return (
-    <div className='px-8 py-2 space-y-8'>
+    <div className='px-8 py-2 space-y-8 mb-12'>
       <Card className='w-full mx-auto'>
         <CardHeader className='pb-4 flex items-center justify-between'>
           <div className='flex items-center justify-start gap-8'>
