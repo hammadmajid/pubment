@@ -1,3 +1,5 @@
+'use client';
+
 import { AppSidebar } from '~/components/app/sidebar';
 import {
   SidebarInset,
@@ -12,7 +14,7 @@ export default function AppWrapper() {
   const navigation = useNavigation();
 
   return (
-    <ThemeProvider>
+    <ThemeProvider defaultTheme='system' attribute='class'>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
