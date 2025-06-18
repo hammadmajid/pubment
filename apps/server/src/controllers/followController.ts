@@ -63,7 +63,7 @@ const followController = {
     }
   },
 
-  getFollowing: async (
+  getFollowingByUserId: async (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -89,7 +89,7 @@ const followController = {
     }
   },
 
-  getFollowers: async (
+  getFollowersOfCurrentUser: async (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -115,7 +115,7 @@ const followController = {
     }
   },
 
-  getFollowersOfUser: async (
+  getFollowersByUserId: async (
     req: Request,
     res: Response,
     next: NextFunction,

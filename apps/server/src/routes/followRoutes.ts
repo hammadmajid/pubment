@@ -6,9 +6,9 @@ const router: Router = express.Router();
 router.post('/toggle', followController.toggleFollow);
 
 router.get('/following', followController.getFollowingOfCurrentUser);
-router.get('/followers', followController.getFollowers);
+router.get('/followers', followController.getFollowersOfCurrentUser);
 
-router.get('/following/:userId', followController.getFollowing);
-router.get('/followers/:userId', followController.getFollowersOfUser);
+router.get('/following/:userId', followController.getFollowingByUserId);
+router.get('/followers/:userId', followController.getFollowersByUserId);
 
 export default router;
