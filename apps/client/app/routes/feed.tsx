@@ -1,9 +1,13 @@
 import { redirect } from 'react-router';
 import { safeFetch } from '~/lib/fetch';
-import { postErrorResponse, postListResponse } from '@repo/schemas/post';
+import {
+  postCreateResponse,
+  postErrorResponse,
+  postListResponse,
+} from '@repo/schemas/post';
 import type { Route } from './+types/feed';
 import { Post } from '~/components/post';
-import { getSession } from '~/session.server';
+import { commitSession, getSession } from '~/session.server';
 
 export function meta() {
   return [{ title: 'Feed | Social Media' }];
@@ -53,4 +57,40 @@ export default function Feed({ loaderData }: Route.ComponentProps) {
       )}
     </div>
   );
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+  const authorId = session.get('userId');
+
+  const formData = await request.formData();
+  const pathname = formData.get('pathname') as string;
+  const content = formData.get('content') as string;
+
+  const result = await safeFetch(
+    {
+      endpoint: '/post/create',
+      body: {
+        authorId,
+        content,
+      },
+    },
+    postCreateResponse,
+    postErrorResponse,
+    session.get('token'),
+  );
+
+  if (result.ok !== true) {
+    return redirect('/500', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  return redirect(`${pathname}`, {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }

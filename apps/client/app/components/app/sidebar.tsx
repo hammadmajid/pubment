@@ -19,6 +19,7 @@ import {
 } from '~/components/ui/sidebar';
 import { Button } from '~/components/ui/button';
 import { NavLink } from 'react-router';
+import NewPost from './new-post';
 
 const navigationItems = [
   {
@@ -75,12 +76,7 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
 
-            <div className='p-2'>
-              <Button className='w-full' size='default'>
-                <PenSquare className='size-4 mr-2' />
-                New Post
-              </Button>
-            </div>
+            <NewPost />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
