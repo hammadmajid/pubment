@@ -76,7 +76,9 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
 
-            <NewPost />
+            <div className='py-4'>
+              <NewPost />
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
