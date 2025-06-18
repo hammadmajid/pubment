@@ -8,7 +8,7 @@ import { redirect } from 'react-router';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { commitSession, getSession } from '~/session.server';
-import { Post } from '~/components/post';
+import { Post } from '~/components/app/post';
 import FollowList from '~/components/app/follow-list';
 
 export function meta() {

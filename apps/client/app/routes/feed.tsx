@@ -6,7 +6,7 @@ import {
   postListResponse,
 } from '@repo/schemas/post';
 import type { Route } from './+types/feed';
-import { Post } from '~/components/post';
+import { Post } from '~/components/app/post';
 import { commitSession, getSession } from '~/session.server';
 import {
   Pagination,

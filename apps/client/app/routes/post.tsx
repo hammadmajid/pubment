@@ -3,7 +3,7 @@ import type { Route } from './+types/post';
 import { redirect } from 'react-router';
 import { safeFetch } from '~/lib/fetch';
 import { postErrorResponse, postResponse } from '@repo/schemas/post';
-import { Post } from '~/components/post';
+import { Post } from '~/components/app/post';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -46,7 +46,7 @@ export function meta({ params }: Route.MetaArgs) {
 export default function PostDetails({ loaderData }: Route.ComponentProps) {
   return (
     <div className='flex flex-col gap-6 px-8 py-2'>
-      <Post post={loaderData.data} />
+      <Post post={loaderData.data} username={loaderData.username} />
     </div>
   );
 }

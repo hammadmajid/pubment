@@ -12,7 +12,7 @@ import {
   followErrorResponse,
   toggleFollowResponse,
 } from '@repo/schemas/follow';
-import { Post } from '~/components/post';
+import { Post } from '~/components/app/post';
 import { Button } from '~/components/ui/button';
 import { Loader2Icon } from 'lucide-react';
 import FollowList from '~/components/app/follow-list';
