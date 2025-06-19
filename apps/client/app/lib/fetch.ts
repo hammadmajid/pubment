@@ -26,7 +26,7 @@ type PostEndpoints =
   | '/user/register'
   | '/user/login'
   | '/post/create'
-  | `/post/${string}/like`
+  | `/${string}/like`
   | '/comment/create'
   | '/follow/toggle';
 
