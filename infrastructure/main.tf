@@ -143,8 +143,8 @@ resource "aws_instance" "backend" {
   vpc_security_group_ids = [aws_security_group.backend.id]
   subnet_id              = data.aws_subnets.default.ids[0]
 
-  # No public IP for backend
-  associate_public_ip_address = false
+  # Enable public IP for backend
+  associate_public_ip_address = true
 
   # Key pair for SSH access (you'll need to create this manually in AWS Console)
   # key_name = "your-key-pair-name"  # Uncomment and set your key pair name

@@ -39,6 +39,11 @@ output "backend_instance_private_ip" {
   value       = aws_instance.backend.private_ip
 }
 
+output "backend_instance_public_ip" {
+  description = "Public IP address of the backend instance"
+  value       = aws_instance.backend.public_ip
+}
+
 output "ubuntu_ami_id" {
   description = "AMI ID of the Ubuntu 20.04 LTS image used"
   value       = data.aws_ami.ubuntu.id
