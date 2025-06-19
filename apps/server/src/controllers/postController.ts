@@ -326,66 +326,6 @@ const postController = {
       next(error);
     }
   },
-
-  getLikes: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const { postId } = req.params;
-      const page = Number.parseInt(req.query.page as string) || 1;
-      const limit = Number.parseInt(req.query.limit as string) || 20;
-      if (!mongoose.Types.ObjectId.isValid(postId)) {
-        res.status(400).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Invalid post ID format',
-          }),
-        );
-        return;
-      }
-      const post = await Post.findById(postId).populate({
-        path: 'likes',
-        select: 'username name profilePicture',
-        options: {
-          skip: (page - 1) * limit,
-          limit: limit,
-        },
-      });
-      if (!post) {
-        res.status(404).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Post not found',
-          }),
-        );
-        return;
-      }
-      const totalLikes = await Post.findById(postId).select('likes');
-      const total = totalLikes?.likes.length || 0;
-      res.status(200).json(
-        postLikesListResponse.parse({
-          success: true,
-          data: {
-            postId: post._id.toString(),
-            likes: Array.isArray(post.likes)
-              ? post.likes.map(normalizeUser)
-              : [],
-            totalLikes: total,
-          },
-          pagination: {
-            page,
-            limit,
-            total,
-            pages: Math.ceil(total / limit),
-          },
-        }),
-      );
-    } catch (error) {
-      next(error);
-    }
-  },
 };
 
 export default postController;

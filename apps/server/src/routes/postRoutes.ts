@@ -9,6 +9,5 @@ router.get('/user/:username', postController.getAllByUsername);
 router.post('/create', postController.create);
 
 router.post('/:postId/like', postController.toggleLike);
-router.get('/:postId/likes', postController.getLikes);
 
 export default router;

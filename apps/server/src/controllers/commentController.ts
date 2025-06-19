@@ -1,8 +1,6 @@
 import {
   commentCreateResponse,
   commentErrorResponse,
-  commentListResponse,
-  commentResponse,
   commentSchema,
 } from '@repo/schemas/comment';
 import type { NextFunction, Request, Response } from 'express';
@@ -64,78 +62,6 @@ const commentController = {
           success: true,
           message: 'Comment created successfully',
           data: normalizeComment(savedComment),
-        }),
-      );
-      return;
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  getByPostId: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const { postId } = req.params;
-      if (!mongoose.Types.ObjectId.isValid(postId)) {
-        res.status(400).json(
-          commentErrorResponse.parse({
-            success: false,
-            message: 'Invalid postId',
-          }),
-        );
-        return;
-      }
-      const comments = await Comment.find({ post: postId })
-        .populate('author', 'username name profilePicture')
-        .sort({ createdAt: -1 });
-      res.status(200).json(
-        commentListResponse.parse({
-          success: true,
-          data: comments.map(normalizeComment),
-        }),
-      );
-      return;
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  getById: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const { id } = req.params;
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        res.status(400).json(
-          commentErrorResponse.parse({
-            success: false,
-            message: 'Invalid comment id',
-          }),
-        );
-        return;
-      }
-      const comment = await Comment.findById(id).populate(
-        'author',
-        'username name profilePicture',
-      );
-      if (!comment) {
-        res.status(404).json(
-          commentErrorResponse.parse({
-            success: false,
-            message: 'Comment not found',
-          }),
-        );
-        return;
-      }
-      res.status(200).json(
-        commentResponse.parse({
-          success: true,
-          data: normalizeComment(comment),
         }),
       );
       return;
