@@ -6,19 +6,30 @@ import {
   CardDescription,
   CardContent,
 } from '~/components/ui/card';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart, Loader2Icon, MessageCircle } from 'lucide-react';
 import { postData } from '@repo/schemas/post';
-import { Link } from 'react-router';
-import { getRelativeTime } from '~/lib/utils';
+import { Link, useFetcher } from 'react-router';
+import { cn, getRelativeTime } from '~/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
+import { Button } from '../ui/button';
 
 interface PostProps {
   username: string;
   post: z.infer<typeof postData>;
+  isLiked: boolean;
   isClickable?: boolean;
 }
 
-export function Post({ username, post, isClickable = false }: PostProps) {
+export function Post({
+  username,
+  post,
+  isLiked,
+  isClickable = false,
+}: PostProps) {
+  const fetcher = useFetcher();
+  const busy = fetcher.state !== 'idle';
+  console.log(isLiked);
+
   return (
     <Card key={post._id}>
       <CardHeader className='flex flex-row items-start justify-between'>
@@ -69,14 +80,24 @@ export function Post({ username, post, isClickable = false }: PostProps) {
 
       <CardContent className='pt-0'>
         <div className='flex items-center gap-4 mt-2'>
-          <button
-            type='button'
-            className='flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors'
-            aria-label='Like post'
-          >
-            <Heart className='w-5 h-5' strokeWidth={2} />
-            <span className='text-sm'>{post.likes.length}</span>
-          </button>
+          <fetcher.Form action={`/post/${post._id}/`} method='post'>
+            <input hidden name='intent' value='like' />
+            <input hidden name='postId' value={post._id} />
+            <Button variant='ghost' disabled={busy} type='submit'>
+              {busy ? (
+                <Loader2Icon className='w-5 h-5 animate-spin' />
+              ) : (
+                <Heart
+                  className={cn(
+                    'w-5 h-5',
+                    isLiked && 'fill-red-500 text-red-500',
+                  )}
+                  strokeWidth={2}
+                />
+              )}
+              <span className='text-sm'>{post.likes.length}</span>
+            </Button>
+          </fetcher.Form>
           <Link
             to={`/post/${post._id}`}
             className='flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors'

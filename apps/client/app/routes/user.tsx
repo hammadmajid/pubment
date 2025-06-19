@@ -41,6 +41,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   );
 
   return {
+    userId: session.get('userId'),
     username: session.get('username'),
     user: userDataResult.value.user,
     posts: userDataResult.value.user.posts,
@@ -149,6 +150,7 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
               isClickable={true}
               post={post}
               username={loaderData.username}
+              isLiked={post.likes.includes(loaderData.userId)}
             />
           ))
         )}

@@ -34,6 +34,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   return {
+    userId: session.get('userId'),
     user: userDataResult.value.user,
     posts: userDataResult.value.user.posts,
     // assert these to prevent typescript from complaining
@@ -115,6 +116,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
               isClickable={true}
               post={post}
               username={user.username}
+              isLiked={post.likes.includes(loaderData.userId)}
             />
           ))
         )}

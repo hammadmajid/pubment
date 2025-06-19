@@ -1,8 +1,12 @@
-import { getSession } from '~/session.server';
+import { commitSession, getSession } from '~/session.server';
 import type { Route } from './+types/post';
-import { Link, redirect } from 'react-router';
+import { data, Link, redirect } from 'react-router';
 import { safeFetch } from '~/lib/fetch';
-import { postErrorResponse, postResponse } from '@repo/schemas/post';
+import {
+  postErrorResponse,
+  postLikeResponse,
+  postResponse,
+} from '@repo/schemas/post';
 import { Post } from '~/components/app/post';
 import { Card } from '~/components/ui/card';
 import { CardContent, CardHeader } from '~/components/ui/card';
@@ -32,6 +36,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   return {
+    userId: session.get('userId'),
     username: session.get('username'),
     data: result.value.data,
   };
@@ -48,12 +53,14 @@ export function meta({ params }: Route.MetaArgs) {
 }
 
 export default function PostDetails({ loaderData }: Route.ComponentProps) {
+  const userId = loaderData.userId;
   const post = loaderData.data.post;
   const comments = loaderData.data.comments;
+  const isLiked = loaderData.data.post.likes.includes(userId);
 
   return (
     <div className='flex flex-col gap-6 px-8 py-2 mb-12'>
-      <Post post={post} username={loaderData.username} />
+      <Post post={post} username={loaderData.username} isLiked={isLiked} />
       <div className='mt-4 ml-8'>
         <h3 className='text-lg font-semibold'>Comments</h3>
         {comments.length > 0 ? (
@@ -100,4 +107,35 @@ export default function PostDetails({ loaderData }: Route.ComponentProps) {
       </div>
     </div>
   );
+}
+
+export async function action({ request, params }: Route.ActionArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+  const postId = params.postId;
+  const formData = await request.formData();
+  const intent = formData.get('intent') as string;
+
+  if (intent === 'comment') {
+    const content = formData.get('content') as string;
+    // TODO: post comment
+  } else {
+    const result = await safeFetch(
+      {
+        endpoint: `/post/${postId}/like`,
+        body: {},
+      },
+      postLikeResponse,
+      postErrorResponse,
+      session.get('token'),
+    );
+    if (result.ok !== true) {
+      throw data(`Failed to toggle like on post: ${postId}`, 500);
+    }
+  }
+
+  return {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  };
 }
