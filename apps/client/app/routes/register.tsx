@@ -3,8 +3,8 @@ import {
   registrationSchema,
   userErrorResponse,
 } from '@repo/schemas/user';
-import { GalleryVerticalEnd } from 'lucide-react';
-import { Form, Link, data, redirect } from 'react-router';
+import { ArrowUpToLine, GalleryVerticalEnd, Loader2Icon } from 'lucide-react';
+import { Link, data, redirect, useFetcher } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -43,6 +43,9 @@ export function meta() {
 export default function Register({ loaderData }: Route.ComponentProps) {
   const { error } = loaderData;
 
+  const fetcher = useFetcher();
+  const busy = fetcher.state !== 'idle';
+
   return (
     <div className='grid min-h-svh lg:grid-cols-2'>
       <div className='flex flex-col gap-4 p-6 md:p-10'>
@@ -56,7 +59,7 @@ export default function Register({ loaderData }: Route.ComponentProps) {
         </div>
         <div className='flex flex-1 items-center justify-center'>
           <div className='w-full max-w-xs'>
-            <Form method='post' className='flex flex-col gap-6'>
+            <fetcher.Form method='post' className='flex flex-col gap-6'>
               <div className='flex flex-col items-center gap-2 text-center'>
                 <h1 className='text-2xl font-bold'>Create your account</h1>
                 <p className='text-muted-foreground text-sm text-balance'>
@@ -103,8 +106,22 @@ export default function Register({ loaderData }: Route.ComponentProps) {
                     required
                   />
                 </div>
-                <Button type='submit' className='w-full'>
-                  Register
+                <Button
+                  type='submit'
+                  className='w-full flex gap-2 items-center'
+                  disabled={busy}
+                >
+                  {busy ? (
+                    <>
+                      <Loader2Icon className='animate-spin' />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowUpToLine />
+                      Register
+                    </>
+                  )}
                 </Button>
               </div>
               <div className='text-center text-sm'>
@@ -113,7 +130,7 @@ export default function Register({ loaderData }: Route.ComponentProps) {
                   Login
                 </Link>
               </div>
-            </Form>
+            </fetcher.Form>
           </div>
         </div>
       </div>
