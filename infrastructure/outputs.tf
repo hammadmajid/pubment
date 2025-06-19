@@ -44,11 +44,6 @@ output "backend_instance_public_ip" {
   value       = aws_instance.backend.public_ip
 }
 
-output "ubuntu_ami_id" {
-  description = "AMI ID of the Ubuntu 20.04 LTS image used"
-  value       = data.aws_ami.ubuntu.id
-}
-
 output "backend_security_group_name" {
   description = "Name of the backend security group"
   value       = aws_security_group.backend.name

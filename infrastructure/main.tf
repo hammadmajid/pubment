@@ -93,22 +93,6 @@ resource "aws_security_group_rule" "backend_app_from_frontend" {
   description              = "Application access from frontend"
 }
 
-# Get Ubuntu 20.04 LTS AMI
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
-
 # Get default subnet for the instances
 data "aws_subnets" "default" {
   filter {
@@ -119,7 +103,7 @@ data "aws_subnets" "default" {
 
 # Frontend EC2 Instance
 resource "aws_instance" "frontend" {
-  ami                    = data.aws_ami.ubuntu.id
+  ami                    = "ami-02003f9f0fde924ea"
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.frontend.id]
   subnet_id              = data.aws_subnets.default.ids[0]
@@ -138,7 +122,7 @@ resource "aws_instance" "frontend" {
 
 # Backend EC2 Instance
 resource "aws_instance" "backend" {
-  ami                    = data.aws_ami.ubuntu.id
+  ami                    = "ami-02003f9f0fde924ea"
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.backend.id]
   subnet_id              = data.aws_subnets.default.ids[0]
