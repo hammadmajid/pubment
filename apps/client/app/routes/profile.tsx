@@ -4,7 +4,7 @@ import {
   publicUserSuccessResponse,
   userErrorResponse,
 } from '@repo/schemas/user';
-import { redirect } from 'react-router';
+import { data, redirect } from 'react-router';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { commitSession, getSession } from '~/session.server';
@@ -29,8 +29,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     userErrorResponse,
   );
 
-  if (!userDataResult.ok) {
-    return redirect('/404');
+  if (userDataResult.ok !== true) {
+    throw data(userDataResult.error.message, 500);
   }
 
   return {

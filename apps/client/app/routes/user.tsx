@@ -4,7 +4,7 @@ import {
   publicUserSuccessResponse,
   userErrorResponse,
 } from '@repo/schemas/user';
-import { useFetcher, redirect } from 'react-router';
+import { useFetcher, redirect, data } from 'react-router';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { commitSession, getSession } from '~/session.server';
@@ -31,8 +31,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     userErrorResponse,
   );
 
-  if (!userDataResult.ok) {
-    return redirect('/404');
+  if (userDataResult.ok !== true) {
+    throw data(userDataResult.error.message, 500);
   }
 
   const loggedInUser = session.get('username');
@@ -178,16 +178,12 @@ export async function action({ request, params }: Route.ActionArgs) {
   );
 
   if (result.ok === false) {
-    return redirect(`/500`, {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
+    throw data(result.error.message, 500);
   }
 
-  return redirect(`/user/${params.username}`, {
+  return {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
-  });
+  };
 }

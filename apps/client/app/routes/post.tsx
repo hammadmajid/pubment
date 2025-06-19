@@ -32,7 +32,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   );
 
   if (result.ok === false) {
-    return redirect('/404');
+    throw data(result.error.message, 500);
   }
 
   return {

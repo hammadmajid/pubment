@@ -1,4 +1,4 @@
-import { redirect, useNavigate, useSearchParams } from 'react-router';
+import { data, redirect, useNavigate, useSearchParams } from 'react-router';
 import { safeFetch } from '~/lib/fetch';
 import {
   postCreateResponse,
@@ -41,11 +41,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
 
   if (result.ok === false) {
-    return redirect('/500', {
-      headers: {
-        'X-Error-Message': result.error.message,
-      },
-    });
+    throw data(result.error.message, 500);
   }
 
   return {
@@ -179,16 +175,12 @@ export async function action({ request }: Route.ActionArgs) {
   );
 
   if (result.ok !== true) {
-    return redirect('/500', {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
+    throw data(result.error.message, 500);
   }
 
-  return redirect(`${pathname}`, {
+  return {
     headers: {
       'Set-Cookie': await commitSession(session),
     },
-  });
+  };
 }
