@@ -101,7 +101,7 @@ export default function Login({ loaderData }: Route.ComponentProps) {
       <div className='bg-muted relative hidden lg:block'>
         <img
           src='/placeholder.png'
-          alt='Image'
+          alt='Social app background'
           className='absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale'
         />
       </div>

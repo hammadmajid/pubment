@@ -87,8 +87,8 @@ export default function Feed({ loaderData }: Route.ComponentProps) {
             key={post._id}
             isClickable={true}
             post={post}
-            username={username}
-            isLiked={post.likes.includes(userId)}
+            username={username ?? ''}
+            isLiked={post.likes.includes(userId ?? '')}
           />
         ))
       )}

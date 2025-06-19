@@ -78,7 +78,7 @@ export async function safeFetch<
 
     // If token is provided, set it in Authorization header
     if (token !== undefined) {
-      (requestOptions.headers as Record<string, string>)['Authorization'] =
+      (requestOptions.headers as Record<string, string>).Authorization =
         `Bearer ${token}`;
     }
 
@@ -86,7 +86,7 @@ export async function safeFetch<
     const contentType = res.headers.get('content-type');
 
     let data: unknown;
-    if (contentType && contentType.includes('application/json')) {
+    if (contentType?.includes('application/json')) {
       data = await res.json();
     } else {
       data = await res.text();
@@ -97,30 +97,27 @@ export async function safeFetch<
       const result = await successSchema.safeParseAsync(data);
       if (result.success) {
         return { ok: true, value: result.data };
-      } else {
-        return {
-          ok: false,
-          error: new Error(
-            `Success schema validation failed: ${result.error.message}`,
-          ),
-        };
       }
-    } else {
-      const result = await errorSchema.safeParseAsync(data);
-      if (result.success) {
-        return {
-          ok: false,
-          error: new Error(`API Error: ${JSON.stringify(result.data)}`),
-        };
-      } else {
-        return {
-          ok: false,
-          error: new Error(
-            `Error schema validation failed: ${result.error.message}`,
-          ),
-        };
-      }
+      return {
+        ok: false,
+        error: new Error(
+          `Success schema validation failed: ${result.error.message}`,
+        ),
+      };
     }
+    const result = await errorSchema.safeParseAsync(data);
+    if (result.success) {
+      return {
+        ok: false,
+        error: new Error(`API Error: ${JSON.stringify(result.data)}`),
+      };
+    }
+    return {
+      ok: false,
+      error: new Error(
+        `Error schema validation failed: ${result.error.message}`,
+      ),
+    };
   } catch (error) {
     return {
       ok: false,

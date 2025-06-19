@@ -38,18 +38,23 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const loggedInUser = session.get('username');
   const user = userDataResult.value.user;
   const posts = user.posts;
-  const followers = user.followers.map((f) => ({
-    _id: f._id!,
-    username: f.username!,
-    name: f.name!,
-    profilePicture: f.profilePicture!,
-  }));
-  const following = user.following.map((f) => ({
-    _id: f._id!,
-    username: f.username!,
-    name: f.name!,
-    profilePicture: f.profilePicture!,
-  }));
+  // to prevent typescript from complaining
+  const followers = user.followers
+    .filter((f) => f._id && f.username && f.name && f.profilePicture)
+    .map((f) => ({
+      _id: f._id,
+      username: f.username,
+      name: f.name,
+      profilePicture: f.profilePicture,
+    }));
+  const following = user.following
+    .filter((f) => f._id && f.username && f.name && f.profilePicture)
+    .map((f) => ({
+      _id: f._id,
+      username: f.username,
+      name: f.name,
+      profilePicture: f.profilePicture,
+    }));
   const isFollowing = user.followers.some(
     (follower) => follower.username === loggedInUser,
   );
@@ -145,8 +150,8 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
               key={post._id}
               isClickable={true}
               post={post}
-              username={username}
-              isLiked={post.likes.includes(userId)}
+              username={username ?? ''}
+              isLiked={post.likes.includes(userId ?? '')}
             />
           ))
         )}
@@ -155,7 +160,7 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
   );
 }
 
-export async function action({ request, params }: Route.ActionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   const session = await getSession(request.headers.get('Cookie'));
 
   const formData = await request.formData();
@@ -163,7 +168,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   const result = await safeFetch(
     {
-      endpoint: `/follow/toggle`,
+      endpoint: '/follow/toggle',
       body: {
         targetUsername: username,
       },

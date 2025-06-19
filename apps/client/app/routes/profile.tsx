@@ -35,18 +35,23 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const user = userDataResult.value.user;
   const posts = user.posts;
-  const followers = user.followers.map((f) => ({
-    _id: f._id!,
-    username: f.username!,
-    name: f.name!,
-    profilePicture: f.profilePicture!,
-  }));
-  const following = user.following.map((f) => ({
-    _id: f._id!,
-    username: f.username!,
-    name: f.name!,
-    profilePicture: f.profilePicture!,
-  }));
+  // to prevent typescript from complaining
+  const followers = user.followers
+    .filter((f) => f._id && f.username && f.name && f.profilePicture)
+    .map((f) => ({
+      _id: f._id,
+      username: f.username,
+      name: f.name,
+      profilePicture: f.profilePicture,
+    }));
+  const following = user.following
+    .filter((f) => f._id && f.username && f.name && f.profilePicture)
+    .map((f) => ({
+      _id: f._id,
+      username: f.username,
+      name: f.name,
+      profilePicture: f.profilePicture,
+    }));
 
   return {
     userId: session.get('userId'),
@@ -113,7 +118,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
               isClickable={true}
               post={post}
               username={user.username}
-              isLiked={post.likes.includes(userId)}
+              isLiked={post.likes.includes(userId ?? '')}
             />
           ))
         )}
