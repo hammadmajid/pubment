@@ -1,0 +1,57 @@
+{
+  "backend_instance_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "i-0c04b55c40a449b12"
+  },
+  "backend_instance_private_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "172.31.24.156"
+  },
+  "backend_instance_public_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "18.153.210.152"
+  },
+  "backend_security_group_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:ec2:eu-central-1:257394475547:security-group/sg-04b0f6751b38f33f0"
+  },
+  "backend_security_group_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "sg-04b0f6751b38f33f0"
+  },
+  "backend_security_group_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "backend-sg"
+  },
+  "frontend_instance_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "i-0c9e09596d0e30f0e"
+  },
+  "frontend_instance_private_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "172.31.23.70"
+  },
+  "frontend_instance_public_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "3.77.237.216"
+  },
+  "frontend_security_group_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "sg-03da0a32b439e6449"
+  },
+  "ubuntu_ami_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "ami-06c374f393664f330"
+  }
+}

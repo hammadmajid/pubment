@@ -1,0 +1,14 @@
+import json
+
+with open('tf_outputs.json') as f:
+    data = json.load(f)
+
+frontend_ip = data['frontend_instance_public_ip']['value']
+backend_ip = data['backend_instance_public_ip']['value']
+
+print(f"""[frontend]
+frontend ansible_host={frontend_ip} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/code-alpha.pem
+
+[backend]
+backend ansible_host={backend_ip} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/code-alpha.pem ansible_ssh_common_args='-o ProxyJump=ubuntu@{frontend_ip}'
+""")
