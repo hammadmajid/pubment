@@ -1,0 +1,81 @@
+- hosts: backend
+  become: yes
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: Update apt cache and upgrade
+      apt: update_cache=yes upgrade=dist
+
+    - name: Install Node.js 23, git, curl
+      apt:
+        name:
+          - git
+          - curl
+        state: present
+
+    - name: Add Node.js 23.x repo
+      shell: curl -fsSL https://deb.nodesource.com/setup_23.x | bash -
+      args:
+        warn: false
+
+    - name: Install Node.js
+      apt: name=nodejs state=present
+
+    - name: Install pnpm and pm2 globally
+      npm:
+        name: "{{ item }}"
+        global: yes
+      loop:
+        - pnpm
+        - pm2
+
+    - name: Clone repository
+      git:
+        repo: 'https://github.com/hammadmajid/CodeAlpha_MiniSocialMediaApp.git'
+        dest: /opt/mini-social-app
+        version: main
+
+    - name: Create root .env
+      copy:
+        dest: /opt/mini-social-app/.env
+        content: |
+          MONGODB_URI={{ MONGODB_URI }}
+          JWT_SECRET={{ JWT_SECRET }}
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
+    - name: Install dependencies
+      shell: pnpm install
+      args:
+        chdir: /opt/mini-social-app
+
+    - name: Build server
+      shell: pnpm build --filter=server
+      args:
+        chdir: /opt/mini-social-app
+
+    - name: Start backend with PM2
+      shell: pm2 start apps/server/dist/server.mjs --name backend --env production
+      args:
+        chdir: /opt/mini-social-app
+
+    - name: Save PM2 process list
+      shell: pm2 save
+
+    - name: Setup PM2 startup
+      shell: pm2 startup systemd -u ubuntu --hp /home/ubuntu
+
+    - name: Allow only internal traffic on port 3000
+      ufw:
+        rule: allow
+        port: 3000
+        proto: tcp
+        from_ip: 10.0.0.0/8
+      notify: reload ufw
+
+  handlers:
+    - name: reload ufw
+      service:
+        name: ufw
+        state: reloaded
