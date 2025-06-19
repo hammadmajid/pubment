@@ -2,6 +2,7 @@
 
 import { Users } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { ResponsiveDialogDrawer } from '~/components/responsive-modal';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
@@ -24,7 +25,10 @@ export default function FollowList({ followers, followings }: FollowListProps) {
   const [open, setOpen] = useState(false);
 
   const UserListItem = ({ user }: { user: UserSummary }) => (
-    <div className='flex items-center space-x-3 p-3 hover:bg-muted/50 rounded-lg transition-colors'>
+    <Link
+      to={`/user/${user.username}`}
+      className='flex items-center space-x-3 p-3 hover:bg-muted/50 rounded-lg transition-colors'
+    >
       <Avatar className='h-10 w-10'>
         <AvatarImage src={user.profilePicture || undefined} alt={user.name} />
         <AvatarFallback>
@@ -44,7 +48,7 @@ export default function FollowList({ followers, followings }: FollowListProps) {
           @{user.username}
         </p>
       </div>
-    </div>
+    </Link>
   );
 
   const EmptyState = ({ type }: { type: 'followers' | 'followings' }) => (
