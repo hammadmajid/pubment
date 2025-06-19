@@ -142,3 +142,14 @@ dist
 # react router
 **/build/
 apps/client/.react-router/
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+*.tfplan.*
+.terraformrc
+terraform.rc
