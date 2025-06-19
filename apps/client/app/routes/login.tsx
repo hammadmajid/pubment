@@ -67,7 +67,7 @@ export default function Login({ loaderData }: Route.ComponentProps) {
                 </p>
               </div>
               <div className='grid gap-6'>
-                <p>{error}</p>
+                <p className='text-destructive font-medium'>{error}</p>
                 <div className='grid gap-3'>
                   <Label>Username</Label>
                   <Input
@@ -133,23 +133,14 @@ export async function action({ request }: Route.ActionArgs) {
   const username = form.get('username');
   const password = form.get('password');
 
-  const { success, data, error } = await loginSchema.safeParseAsync({
-    username,
-    password,
-  });
-
-  if (!success) {
-    session.flash('error', error.message.toString());
-
-    return redirect('/login', {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
-  }
-
   const result = await safeFetch(
-    { endpoint: '/user/login', body: data },
+    {
+      endpoint: '/user/login',
+      body: {
+        username,
+        password,
+      },
+    },
     loginResponse,
   );
 

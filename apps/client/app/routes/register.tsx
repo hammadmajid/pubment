@@ -67,7 +67,7 @@ export default function Register({ loaderData }: Route.ComponentProps) {
                 </p>
               </div>
               <div className='grid gap-6'>
-                <p>{error}</p>
+                <p className='text-destructive font-medium'>{error}</p>
                 <div className='grid gap-3'>
                   <Label>Name</Label>
                   <Input
@@ -154,25 +154,8 @@ export async function action({ request }: Route.ActionArgs) {
   const email = form.get('email');
   const password = form.get('password');
 
-  const { success, data, error } = await registrationSchema.safeParseAsync({
-    name,
-    username,
-    email,
-    password,
-  });
-
-  if (!success) {
-    session.flash('error', error.message);
-
-    return redirect('/register', {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
-  }
-
   const result = await safeFetch(
-    { endpoint: '/user/register', body: data },
+    { endpoint: '/user/register', body: { name, username, email, password } },
     registrationResponse,
   );
 
