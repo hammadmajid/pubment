@@ -20,5 +20,5 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Search({ loaderData }: Route.ComponentProps) {
-  return <div className='px-8 py-2'></div>;
+  return <div className='px-8 py-2'>Search</div>;
 }

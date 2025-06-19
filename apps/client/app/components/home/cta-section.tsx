@@ -22,11 +22,7 @@ export default function CTASection() {
               </Button>
             </Link>
             <Link to='/features'>
-              <Button
-                size='lg'
-                variant='outline'
-                className='border-primary-foreground px-8'
-              >
+              <Button size='lg' variant='ghost' className='border-primary px-8'>
                 Explore Features
               </Button>
             </Link>
