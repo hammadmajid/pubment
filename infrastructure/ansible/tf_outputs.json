@@ -2,17 +2,17 @@
   "backend_instance_id": {
     "sensitive": false,
     "type": "string",
-    "value": "i-0c04b55c40a449b12"
+    "value": "i-0b2351995b7767282"
   },
   "backend_instance_private_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "172.31.24.156"
+    "value": "172.31.21.19"
   },
   "backend_instance_public_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "18.153.210.152"
+    "value": "3.72.74.219"
   },
   "backend_security_group_arn": {
     "sensitive": false,
@@ -32,26 +32,21 @@
   "frontend_instance_id": {
     "sensitive": false,
     "type": "string",
-    "value": "i-0c9e09596d0e30f0e"
+    "value": "i-0e9bc25dcd28f0774"
   },
   "frontend_instance_private_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "172.31.23.70"
+    "value": "172.31.18.59"
   },
   "frontend_instance_public_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "3.77.237.216"
+    "value": "3.66.171.140"
   },
   "frontend_security_group_id": {
     "sensitive": false,
     "type": "string",
     "value": "sg-03da0a32b439e6449"
-  },
-  "ubuntu_ami_id": {
-    "sensitive": false,
-    "type": "string",
-    "value": "ami-06c374f393664f330"
   }
 }
