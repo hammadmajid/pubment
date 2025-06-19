@@ -5,8 +5,8 @@ from faker import Faker
 BASE_URL = "http://localhost:3000"
 fake = Faker()
 
-USERNAMES = ["mark1", "augustus", "maria", "lucy", "oliver"]
-NAMES = ["Mark Geller", "Augustus Smith", "Maria Garcia", "Lucy Brown", "Oliver Miller"]
+USERNAMES = ["mark1", "augustus", "maria", "lucy", "oliver", 'bine']
+NAMES = ["Mark Geller", "Augustus Smith", "Maria Garcia", "Lucy Brown", "Oliver Miller", 'Bine']
 PASSWORD = "Password@123"  # meets schema requirements
 
 users = []
@@ -16,7 +16,8 @@ posts = []
 # 1. Register users
 for username, name in zip(USERNAMES, NAMES):
     email = f"{username}@example.com"
-    profile_picture = fake.image_url()
+    # Use a unique random image for each user
+    profile_picture = f"https://picsum.photos/200?random={random.randint(1, 10000)}"
     bio = fake.sentence()
     resp = requests.post(
         f"{BASE_URL}/user/register",
