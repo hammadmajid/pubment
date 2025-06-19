@@ -2,8 +2,7 @@
   become: yes
   vars_files:
     - vault.yml
-  vars:
-    backend_private_ip: "172.31.27.168"
+    - frontend_vars.yml
   tasks:
     - name: Update apt cache and upgrade
       apt: update_cache=yes upgrade=dist
