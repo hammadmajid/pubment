@@ -37,7 +37,6 @@
       loop:
         - pnpm
         - pm2
-        - serve
 
     - name: Clone repository
       git:
@@ -65,9 +64,9 @@
         chdir: /opt/mini-social-app
 
     - name: Start frontend with PM2
-      shell: pm2 start serve --name frontend -- apps/client/build/server --single --port 3000
+      shell: pnpm run start
       args:
-        chdir: /opt/mini-social-app
+        chdir: /opt/mini-social-app/apps/client
 
     - name: Save PM2 process list
       shell: pm2 save
