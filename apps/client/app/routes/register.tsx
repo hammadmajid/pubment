@@ -1,16 +1,16 @@
-import { GalleryVerticalEnd } from 'lucide-react';
-import { data, Form, Link, redirect } from 'react-router';
-import type { Route } from './+types/register';
-import { commitSession, getSession } from '~/session.server';
 import {
   registrationResponse,
   registrationSchema,
   userErrorResponse,
 } from '@repo/schemas/user';
-import { safeFetch } from '~/lib/fetch';
+import { GalleryVerticalEnd } from 'lucide-react';
+import { Form, Link, data, redirect } from 'react-router';
 import { Button } from '~/components/ui/button';
-import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { safeFetch } from '~/lib/fetch';
+import { commitSession, getSession } from '~/session.server';
+import type { Route } from './+types/register';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));

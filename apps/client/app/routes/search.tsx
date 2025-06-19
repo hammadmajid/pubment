@@ -1,7 +1,6 @@
+import { redirect } from 'react-router';
 import { getSession } from '~/session.server';
 import type { Route } from './+types/search';
-import { redirect } from 'react-router';
-
 
 export function meta() {
   return [{ title: 'Search | Social Media' }];

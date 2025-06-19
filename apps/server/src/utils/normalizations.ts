@@ -26,15 +26,21 @@ export function normalizePost(post: any) {
         ? post.updatedAt.toISOString()
         : String(post.updatedAt),
   };
-}export function normalizeComment(comment: any) {
-    if (!comment) return null;
-    return {
-        _id: comment._id?.toString?.() ?? '',
-        author: normalizeUser(comment.author),
-        post: comment.post?.toString?.() ?? '',
-        content: comment.content,
-        createdAt: comment.createdAt instanceof Date ? comment.createdAt.toISOString() : String(comment.createdAt),
-        updatedAt: comment.updatedAt instanceof Date ? comment.updatedAt.toISOString() : String(comment.updatedAt),
-    };
 }
-
+export function normalizeComment(comment: any) {
+  if (!comment) return null;
+  return {
+    _id: comment._id?.toString?.() ?? '',
+    author: normalizeUser(comment.author),
+    post: comment.post?.toString?.() ?? '',
+    content: comment.content,
+    createdAt:
+      comment.createdAt instanceof Date
+        ? comment.createdAt.toISOString()
+        : String(comment.createdAt),
+    updatedAt:
+      comment.updatedAt instanceof Date
+        ? comment.updatedAt.toISOString()
+        : String(comment.updatedAt),
+  };
+}

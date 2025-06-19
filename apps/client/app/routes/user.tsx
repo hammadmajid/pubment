@@ -1,21 +1,21 @@
-import { safeFetch } from '~/lib/fetch';
-import type { Route } from './+types/user';
-import {
-  publicUserSuccessResponse,
-  userErrorResponse,
-} from '@repo/schemas/user';
-import { useFetcher, redirect, data } from 'react-router';
-import { Card, CardContent, CardHeader } from '~/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { commitSession, getSession } from '~/session.server';
 import {
   followErrorResponse,
   toggleFollowResponse,
 } from '@repo/schemas/follow';
-import { Post } from '~/components/app/post';
-import { Button } from '~/components/ui/button';
+import {
+  publicUserSuccessResponse,
+  userErrorResponse,
+} from '@repo/schemas/user';
 import { Loader2Icon } from 'lucide-react';
+import { data, redirect, useFetcher } from 'react-router';
 import FollowList from '~/components/app/follow-list';
+import { Post } from '~/components/app/post';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader } from '~/components/ui/card';
+import { safeFetch } from '~/lib/fetch';
+import { commitSession, getSession } from '~/session.server';
+import type { Route } from './+types/user';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));

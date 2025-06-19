@@ -1,22 +1,22 @@
-import { data, redirect, useNavigate, useSearchParams } from 'react-router';
-import { safeFetch } from '~/lib/fetch';
 import {
   postCreateResponse,
   postErrorResponse,
   postListResponse,
 } from '@repo/schemas/post';
-import type { Route } from './+types/feed';
+import { data, redirect, useNavigate, useSearchParams } from 'react-router';
 import { Post } from '~/components/app/post';
-import { commitSession, getSession } from '~/session.server';
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis,
+  PaginationPrevious,
 } from '~/components/ui/pagination';
+import { safeFetch } from '~/lib/fetch';
+import { commitSession, getSession } from '~/session.server';
+import type { Route } from './+types/feed';
 
 export function meta() {
   return [{ title: 'Feed | Social Media' }];
@@ -31,7 +31,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   // Get page from query params
   const url = new URL(request.url);
-  const page = parseInt(url.searchParams.get('page') || '1', 10);
+  const page = Number.parseInt(url.searchParams.get('page') || '1', 10);
 
   const result = await safeFetch(
     { endpoint: `/post?page=${page}` },

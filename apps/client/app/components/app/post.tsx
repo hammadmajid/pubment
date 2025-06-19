@@ -1,16 +1,16 @@
-import { z } from 'zod';
+import type { postData } from '@repo/schemas/post';
+import { Heart, Loader2Icon, MessageCircle } from 'lucide-react';
+import { Link, useFetcher } from 'react-router';
+import type { z } from 'zod';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from '~/components/ui/card';
-import { Heart, Loader2Icon, MessageCircle } from 'lucide-react';
-import { postData } from '@repo/schemas/post';
-import { Link, useFetcher } from 'react-router';
 import { cn, getRelativeTime } from '~/lib/utils';
-import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '../ui/button';
 
 interface PostProps {

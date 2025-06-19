@@ -1,14 +1,14 @@
 'use client';
 
+import { Outlet } from 'react-router';
+import { useNavigation } from 'react-router';
 import { AppSidebar } from '~/components/app/sidebar';
+import { ThemeProvider } from '~/components/theme-provider';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '~/components/ui/sidebar';
-import { Outlet } from 'react-router';
-import { useNavigation } from 'react-router';
-import { ThemeProvider } from '~/components/theme-provider';
 
 export default function AppWrapper() {
   const navigation = useNavigation();

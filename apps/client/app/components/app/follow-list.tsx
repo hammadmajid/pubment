@@ -1,12 +1,12 @@
 'use client';
 
+import { Users } from 'lucide-react';
 import { useState } from 'react';
 import { ResponsiveDialogDrawer } from '~/components/responsive-modal';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { Button } from '~/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Button } from '~/components/ui/button';
 import { ScrollArea } from '~/components/ui/scroll-area';
-import { Users } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 interface UserSummary {
   _id: string;
@@ -70,12 +70,8 @@ export default function FollowList({ followers, followings }: FollowListProps) {
       trigger={
         <Button variant='ghost' onClick={() => setOpen(true)}>
           <Users className='h-4 w-4 mr-2' />
-          <span className='text-sm'>
-            {followers.length} Followers
-          </span>
-          <span className='text-sm'>
-            {followings.length} Following
-          </span>
+          <span className='text-sm'>{followers.length} Followers</span>
+          <span className='text-sm'>{followings.length} Following</span>
         </Button>
       }
     >

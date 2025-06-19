@@ -1,7 +1,7 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { type Express } from 'express';
-import morgan from 'morgan'
+import morgan from 'morgan';
 import { config } from './config';
 import { authenticate } from './middleware/auth';
 import commentRoutes from './routes/commentRoutes';
@@ -11,7 +11,7 @@ import userRoutes from './routes/userRoutes';
 
 const app: Express = express();
 
-app.disable('etag')
+app.disable('etag');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,7 +25,7 @@ app.use(
     exposedHeaders: ['*'],
   }),
 );
-app.use(morgan('tiny'))
+app.use(morgan('tiny'));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

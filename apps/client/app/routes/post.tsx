@@ -1,17 +1,17 @@
-import { commitSession, getSession } from '~/session.server';
-import type { Route } from './+types/post';
-import { data, Link, redirect } from 'react-router';
-import { safeFetch } from '~/lib/fetch';
 import {
   postErrorResponse,
   postLikeResponse,
   postResponse,
 } from '@repo/schemas/post';
+import { Link, data, redirect } from 'react-router';
 import { Post } from '~/components/app/post';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Card } from '~/components/ui/card';
 import { CardContent, CardHeader } from '~/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
+import { safeFetch } from '~/lib/fetch';
 import { getRelativeTime } from '~/lib/utils';
+import { commitSession, getSession } from '~/session.server';
+import type { Route } from './+types/post';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));

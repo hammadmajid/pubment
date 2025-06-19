@@ -1,11 +1,13 @@
 import {
-  Home,
-  Search,
-  User,
-  PenSquare,
   GalleryVerticalEnd,
+  Home,
+  PenSquare,
+  Search,
   Settings,
+  User,
 } from 'lucide-react';
+import { NavLink } from 'react-router';
+import { Button } from '~/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -17,8 +19,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '~/components/ui/sidebar';
-import { Button } from '~/components/ui/button';
-import { NavLink } from 'react-router';
 import NewPost from './new-post';
 
 const navigationItems = [

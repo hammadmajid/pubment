@@ -6,7 +6,7 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
 } from 'react-router';
-import { Alert, AlertTitle, AlertDescription } from './components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
 
 import type { Route } from './+types/root';
 import './app.css';

@@ -1,11 +1,11 @@
-import type { Request, Response, NextFunction } from 'express';
-import mongoose from 'mongoose';
-import Follow from '../models/follow';
 import {
+  followErrorResponse,
   toggleFollowRequest,
   toggleFollowResponse,
-  followErrorResponse,
 } from '@repo/schemas/follow';
+import type { NextFunction, Request, Response } from 'express';
+import mongoose from 'mongoose';
+import Follow from '../models/follow';
 
 const followController = {
   toggleFollow: async (

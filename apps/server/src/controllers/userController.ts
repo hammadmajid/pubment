@@ -1,20 +1,20 @@
+import {
+  loginResponse,
+  loginSchema,
+  publicUserSchema,
+  publicUserSuccessResponse,
+  registrationResponse,
+  registrationSchema,
+  userErrorResponse,
+} from '@repo/schemas/user';
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { User } from '../models';
-import {
-  loginSchema,
-  registrationSchema,
-  registrationResponse,
-  loginResponse,
-  userErrorResponse,
-  publicUserSuccessResponse,
-  publicUserSchema,
-} from '@repo/schemas/user';
-import { comparePassword, generateSalt, hashPassword } from '../utils/crypto';
-import { generateToken } from '../utils/jwt';
 import Follow from '../models/follow';
 import Post from '../models/post';
-import { normalizeUser, normalizePost } from '../utils/normalizations';
+import { comparePassword, generateSalt, hashPassword } from '../utils/crypto';
+import { generateToken } from '../utils/jwt';
+import { normalizePost, normalizeUser } from '../utils/normalizations';
 
 const userController = {
   register: async (

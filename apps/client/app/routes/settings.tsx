@@ -1,7 +1,7 @@
-import { destroySession, getSession } from '~/session.server';
-import type { Route } from './+types/settings';
 import { Form, redirect } from 'react-router';
 import { Button } from '~/components/ui/button';
+import { destroySession, getSession } from '~/session.server';
+import type { Route } from './+types/settings';
 
 export function meta() {
   return [{ title: 'Settings | Social Media' }];

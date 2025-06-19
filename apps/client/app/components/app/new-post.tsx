@@ -3,11 +3,11 @@
 import type React from 'react';
 
 import { Loader2Icon, PenSquare } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useFetcher, useLocation } from 'react-router';
+import { ResponsiveDialogDrawer } from '~/components/responsive-modal';
 import { Button } from '~/components/ui/button';
 import { Textarea } from '~/components/ui/textarea';
-import { ResponsiveDialogDrawer } from '~/components/responsive-modal';
-import { useState, useEffect } from 'react';
 
 export default function NewPost() {
   const [content, setContent] = useState('');

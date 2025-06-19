@@ -1,6 +1,6 @@
-import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
 
 // @ts-expect-error import.meta is valid in ESM
 const __filename = fileURLToPath(import.meta.url);

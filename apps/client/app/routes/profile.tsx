@@ -1,15 +1,15 @@
-import { safeFetch } from '~/lib/fetch';
-import type { Route } from './+types/profile';
 import {
   publicUserSuccessResponse,
   userErrorResponse,
 } from '@repo/schemas/user';
 import { data, redirect } from 'react-router';
-import { Card, CardContent, CardHeader } from '~/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { commitSession, getSession } from '~/session.server';
-import { Post } from '~/components/app/post';
 import FollowList from '~/components/app/follow-list';
+import { Post } from '~/components/app/post';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Card, CardContent, CardHeader } from '~/components/ui/card';
+import { safeFetch } from '~/lib/fetch';
+import { commitSession, getSession } from '~/session.server';
+import type { Route } from './+types/profile';
 
 export function meta() {
   return [{ title: 'Profile | Social Media' }];
