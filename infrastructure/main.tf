@@ -128,7 +128,7 @@ resource "aws_instance" "frontend" {
   associate_public_ip_address = true
 
   # Key pair for SSH access (you'll need to create this manually in AWS Console)
-  # key_name = "your-key-pair-name"  # Uncomment and set your key pair name
+  key_name = "code-alpha"
 
   tags = {
     Name = "frontend-server"
@@ -147,7 +147,7 @@ resource "aws_instance" "backend" {
   associate_public_ip_address = true
 
   # Key pair for SSH access (you'll need to create this manually in AWS Console)
-  # key_name = "your-key-pair-name"  # Uncomment and set your key pair name
+  key_name = "code-alpha"
 
   tags = {
     Name = "backend-server"
