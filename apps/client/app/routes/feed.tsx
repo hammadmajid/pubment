@@ -36,12 +36,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   const result = await safeFetch(
     { endpoint: `/post?page=${page}` },
     postListResponse,
-    postErrorResponse,
     session.get('token'),
   );
 
   if (result.ok === false) {
-    throw data(result.error.message, 500);
+    throw data(result.error, 500);
   }
 
   const { data: posts, pagination } = result.value;
@@ -173,12 +172,11 @@ export async function action({ request }: Route.ActionArgs) {
       },
     },
     postCreateResponse,
-    postErrorResponse,
     session.get('token'),
   );
 
   if (result.ok !== true) {
-    throw data(result.error.message, 500);
+    throw data(result.error, 500);
   }
 
   return {

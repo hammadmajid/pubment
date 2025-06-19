@@ -12,15 +12,8 @@ export type ApiEndpoint =
   | `/post/user/${string}`
   | '/post/create'
   | `/post/${string}/like`
-  | `/post/${string}/likes`
-  | `/comment/post/${string}`
-  | `/comment/${string}`
   | '/comment/create'
-  | '/follow/toggle'
-  | '/followers'
-  | `/followers/${string}`
-  | '/following'
-  | `/following/${string}`;
+  | '/follow/toggle';
 
 type PostEndpoints =
   | '/user/register'
@@ -30,23 +23,16 @@ type PostEndpoints =
   | '/comment/create'
   | '/follow/toggle';
 
-type GetEndpoints = Exclude<ApiEndpoint, PostEndpoints>;
-
 // Conditional request type based on endpoint method
 export type ApiRequest<T extends ApiEndpoint> = T extends PostEndpoints
   ? { endpoint: T; body: unknown }
   : { endpoint: T };
 
-export type Result<T> = { ok: true; value: T } | { ok: false; error: Error };
+export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
-export async function safeFetch<
-  TSuccess,
-  TError,
-  TEndpoint extends ApiEndpoint,
->(
+export async function safeFetch<TSuccess, TEndpoint extends ApiEndpoint>(
   request: ApiRequest<TEndpoint>,
   successSchema: ZodType<TSuccess> | ZodType<TSuccess, ZodTypeDef, unknown>,
-  errorSchema: ZodType<TError> | ZodType<TError, ZodTypeDef, unknown>,
   token?: string,
 ): Promise<Result<TSuccess>> {
   try {
@@ -100,28 +86,23 @@ export async function safeFetch<
       }
       return {
         ok: false,
-        error: new Error(
-          `Success schema validation failed: ${result.error.message}`,
-        ),
+        error: `Success schema validation failed: ${result.error.message}`,
       };
     }
-    const result = await errorSchema.safeParseAsync(data);
-    if (result.success) {
+    if (typeof data === 'string') {
       return {
         ok: false,
-        error: new Error(`API Error: ${JSON.stringify(result.data)}`),
+        error: data,
       };
     }
     return {
       ok: false,
-      error: new Error(
-        `Error schema validation failed: ${result.error.message}`,
-      ),
+      error: 'Unknown error',
     };
   } catch (error) {
     return {
       ok: false,
-      error: error instanceof Error ? error : new Error(String(error)),
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

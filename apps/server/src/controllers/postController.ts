@@ -1,8 +1,6 @@
 import {
   postCreateResponse,
-  postErrorResponse,
   postLikeResponse,
-  postLikesListResponse,
   postListResponse,
   postResponse,
   postSchema,
@@ -11,11 +9,7 @@ import type { NextFunction, Request, Response } from 'express';
 import mongoose, { Types } from 'mongoose';
 import { ZodError } from 'zod';
 import { type IPost, Post } from '../models';
-import {
-  normalizeComment,
-  normalizePost,
-  normalizeUser,
-} from '../utils/normalizations';
+import { normalizeComment, normalizePost } from '../utils/normalizations';
 
 const postController = {
   create: async (
@@ -26,34 +20,20 @@ const postController = {
     try {
       const validationResult = postSchema.safeParse(req.body);
       if (!validationResult.success) {
-        res.status(400).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Validation failed',
-            errors: validationResult.error.errors,
-          }),
-        );
+        const firstError =
+          validationResult.error.errors[0]?.message || 'Invalid post data';
+        res.status(400).json(firstError);
         return;
       }
       const { authorId, content } = validationResult.data;
       if (!mongoose.Types.ObjectId.isValid(authorId)) {
-        res.status(400).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Invalid author ID format',
-          }),
-        );
+        res.status(400).json('Invalid author ID format');
         return;
       }
       const User = mongoose.model('User');
       const authorExists = await User.findById(authorId);
       if (!authorExists) {
-        res.status(404).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Author not found',
-          }),
-        );
+        res.status(404).json('Author not found');
         return;
       }
       const newPost = new Post({
@@ -71,14 +51,11 @@ const postController = {
       );
     } catch (error) {
       if (error instanceof mongoose.Error.ValidationError) {
-        const errors = Object.values(error.errors).map((err) => err.message);
-        res.status(400).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Database validation failed',
-            errors: errors,
-          }),
+        const errors = Object.values(error.errors).map(
+          (err: mongoose.Error.ValidatorError | mongoose.Error.CastError) =>
+            err.message,
         );
+        res.status(400).json(errors[0] || 'Database validation failed');
         return;
       }
       if (
@@ -86,23 +63,12 @@ const postController = {
         error.name === 'MongoServerError' &&
         (error as unknown as { code: number }).code === 11000
       ) {
-        res.status(409).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Duplicate entry detected',
-          }),
-        );
+        res.status(409).json('Duplicate entry detected');
         return;
       }
       if (error instanceof ZodError) {
-        const errors = error.errors.map((err) => err.message);
-        res.status(400).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Validation failed',
-            errors: errors,
-          }),
-        );
+        const firstError = error.errors[0]?.message || 'Invalid post data';
+        res.status(400).json(firstError);
         return;
       }
       next(error);
@@ -149,23 +115,13 @@ const postController = {
     try {
       const { username } = req.params;
       if (!username || typeof username !== 'string') {
-        res.status(400).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Invalid username format',
-          }),
-        );
+        res.status(400).json('Invalid username format');
         return;
       }
       const User = mongoose.model('User');
       const user = await User.findOne({ username }).select('_id');
       if (!user) {
-        res.status(404).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'User not found',
-          }),
-        );
+        res.status(404).json('User not found');
         return;
       }
       const page = Number.parseInt(req.query.page as string) || 1;
@@ -202,12 +158,7 @@ const postController = {
     try {
       const { id } = req.params;
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        res.status(400).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Invalid post ID format',
-          }),
-        );
+        res.status(400).json('Invalid post ID format');
         return;
       }
       const post = await Post.findById(id).populate(
@@ -215,12 +166,7 @@ const postController = {
         'username name profilePicture',
       );
       if (!post) {
-        res.status(404).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Post not found',
-          }),
-        );
+        res.status(404).json('Post not found');
         return;
       }
       // Fetch comments for the post
@@ -253,31 +199,16 @@ const postController = {
       const { postId } = req.params;
       const userId = req.user?.id;
       if (!userId) {
-        res.status(401).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Authentication required',
-          }),
-        );
+        res.status(401).json('Authentication required');
         return;
       }
       if (!postId || !Types.ObjectId.isValid(postId)) {
-        res.status(400).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Invalid post ID format',
-          }),
-        );
+        res.status(400).json('Invalid post ID format');
         return;
       }
       const post: IPost | null = await Post.findById(postId);
       if (!post) {
-        res.status(404).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Post not found',
-          }),
-        );
+        res.status(404).json('Post not found');
         return;
       }
       const userObjectId = new Types.ObjectId(userId);
@@ -302,12 +233,7 @@ const postController = {
         action = 'liked';
       }
       if (!updatedPost) {
-        res.status(500).json(
-          postErrorResponse.parse({
-            success: false,
-            message: 'Failed to update post',
-          }),
-        );
+        res.status(500).json('Failed to update post');
         return;
       }
       const normalized = normalizePost(updatedPost);

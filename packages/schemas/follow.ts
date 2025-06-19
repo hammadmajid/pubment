@@ -22,8 +22,4 @@ export const userSummary = z.object({
 export type UserSummary = z.infer<typeof userSummary>;
 
 // Error response
-export const followErrorResponse = z.object({
-  success: z.literal(false),
-  message: z.string(),
-  errors: z.array(z.any()).optional(),
-});
+export const followErrorResponse = z.string();

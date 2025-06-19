@@ -26,11 +26,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const userDataResult = await safeFetch(
     { endpoint: `/user/${username}` },
     publicUserSuccessResponse,
-    userErrorResponse,
   );
 
   if (userDataResult.ok !== true) {
-    throw data(userDataResult.error.message, 500);
+    throw data(userDataResult.error, 500);
   }
 
   const user = userDataResult.value.user;

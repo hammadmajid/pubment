@@ -79,8 +79,4 @@ export const postLikesListResponse = z.object({
   }),
 });
 
-export const postErrorResponse = z.object({
-  success: z.literal(false),
-  message: z.string(),
-  errors: z.array(z.any()).optional(),
-});
+export const postErrorResponse = z.string();

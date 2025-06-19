@@ -5,7 +5,6 @@ import {
   publicUserSuccessResponse,
   registrationResponse,
   registrationSchema,
-  userErrorResponse,
 } from '@repo/schemas/user';
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
@@ -25,13 +24,8 @@ const userController = {
     try {
       const validationResult = registrationSchema.safeParse(req.body);
       if (!validationResult.success) {
-        res.status(400).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'Validation failed',
-            errors: validationResult.error.errors,
-          }),
-        );
+        const firstError = validationResult.error.errors[0]?.message || 'Invalid registration data';
+        res.status(400).json(firstError);
         return;
       }
 
@@ -43,12 +37,7 @@ const userController = {
       });
 
       if (existingUser) {
-        res.status(409).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'User already exists with this email or username',
-          }),
-        );
+        res.status(409).json('User already exists with this email or username');
         return;
       }
 
@@ -91,23 +80,13 @@ const userController = {
       );
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 11000) {
-        res.status(409).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'User already exists with this email or username',
-          }),
-        );
+        res.status(409).json('User already exists with this email or username');
         return;
       }
 
       if (error instanceof ZodError) {
-        res.status(400).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'Validation failed',
-            errors: error.errors,
-          }),
-        );
+        const firstError = error.errors[0]?.message || 'Invalid registration data';
+        res.status(400).json(firstError);
         return;
       }
 
@@ -123,13 +102,8 @@ const userController = {
     try {
       const validationResult = loginSchema.safeParse(req.body);
       if (!validationResult.success) {
-        res.status(400).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'Validation failed',
-            errors: validationResult.error.errors,
-          }),
-        );
+        const firstError = validationResult.error.errors[0]?.message || 'Invalid login data';
+        res.status(400).json(firstError);
         return;
       }
 
@@ -140,22 +114,12 @@ const userController = {
       });
 
       if (!user) {
-        res.status(401).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'Invalid credentials',
-          }),
-        );
+        res.status(401).json('Invalid credentials');
         return;
       }
 
       if (!(await comparePassword(password, user.salt, user.password))) {
-        res.status(401).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'Invalid credentials',
-          }),
-        );
+        res.status(401).json('Invalid credentials');
         return;
       }
 
@@ -182,13 +146,8 @@ const userController = {
       );
     } catch (error) {
       if (error instanceof ZodError) {
-        res.status(400).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'Validation failed',
-            errors: error.errors,
-          }),
-        );
+        const firstError = error.errors[0]?.message || 'Invalid login data';
+        res.status(400).json(firstError);
         return;
       }
 
@@ -205,13 +164,8 @@ const userController = {
       const usernameSchema = registrationSchema.shape.username;
       const parseResult = usernameSchema.safeParse(req.params.username);
       if (!parseResult.success) {
-        res.status(400).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'Invalid username',
-            errors: parseResult.error.errors,
-          }),
-        );
+        const firstError = parseResult.error.errors[0]?.message || 'Invalid username';
+        res.status(400).json(firstError);
         return;
       }
 
@@ -219,12 +173,7 @@ const userController = {
       const user = await User.findOne({ username });
 
       if (!user) {
-        res.status(404).json(
-          userErrorResponse.parse({
-            success: false,
-            message: 'User not found',
-          }),
-        );
+        res.status(404).json('User not found');
         return;
       }
 

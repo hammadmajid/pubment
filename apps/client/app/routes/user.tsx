@@ -28,11 +28,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const userDataResult = await safeFetch(
     { endpoint: `/user/${username}` },
     publicUserSuccessResponse,
-    userErrorResponse,
   );
 
   if (userDataResult.ok !== true) {
-    throw data(userDataResult.error.message, 500);
+    throw data(userDataResult.error, 500);
   }
 
   const loggedInUser = session.get('username');
@@ -174,12 +173,11 @@ export async function action({ request }: Route.ActionArgs) {
       },
     },
     toggleFollowResponse,
-    followErrorResponse,
     session.get('token'),
   );
 
   if (result.ok === false) {
-    throw data(result.error.message, 500);
+    throw data(result.error, 500);
   }
 
   return {

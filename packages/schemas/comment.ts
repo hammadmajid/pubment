@@ -36,8 +36,4 @@ export const commentListResponse = z.object({
   data: z.array(commentData),
 });
 
-export const commentErrorResponse = z.object({
-  success: z.literal(false),
-  message: z.string(),
-  errors: z.array(z.any()).optional(),
-});
+export const commentErrorResponse = z.string();

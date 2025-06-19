@@ -151,12 +151,11 @@ export async function action({ request }: Route.ActionArgs) {
   const result = await safeFetch(
     { endpoint: '/user/login', body: data },
     loginResponse,
-    userErrorResponse,
   );
 
   if (result.ok !== true) {
-    console.log(result.error.message);
-    session.flash('error', result.error.message);
+    console.log(result.error);
+    session.flash('error', result.error);
 
     return redirect('/login', {
       headers: {

@@ -33,12 +33,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       endpoint: `/post/${postId}`,
     },
     postResponse,
-    postErrorResponse,
     session.get('token'),
   );
 
   if (result.ok === false) {
-    throw data(result.error.message, 500);
+    throw data(result.error, 500);
   }
 
   const { post, comments } = result.value.data;
@@ -147,7 +146,6 @@ export async function action({ request, params }: Route.ActionArgs) {
         },
       },
       commentCreateResponse,
-      commentErrorResponse,
       session.get('token'),
     );
     if (result.ok !== true) {
@@ -161,7 +159,6 @@ export async function action({ request, params }: Route.ActionArgs) {
         body: {},
       },
       postLikeResponse,
-      postErrorResponse,
       session.get('token'),
     );
     if (result.ok !== true) {

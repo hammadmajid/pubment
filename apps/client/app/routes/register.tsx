@@ -174,11 +174,10 @@ export async function action({ request }: Route.ActionArgs) {
   const result = await safeFetch(
     { endpoint: '/user/register', body: data },
     registrationResponse,
-    userErrorResponse,
   );
 
   if (result.ok !== true) {
-    session.flash('error', result.error.message);
+    session.flash('error', result.error);
 
     return redirect('/register', {
       headers: {

@@ -17,15 +17,10 @@ const followController = {
       const userId = req.user?.id;
       const validationResult = toggleFollowRequest.safeParse(req.body);
       if (!userId || !validationResult.success) {
-        res.status(400).json(
-          followErrorResponse.parse({
-            success: false,
-            message: 'Invalid user ID or request body',
-            errors: validationResult.success
-              ? undefined
-              : validationResult.error.errors,
-          }),
-        );
+        const firstError = validationResult.success
+          ? 'Invalid user ID'
+          : validationResult.error.errors[0]?.message || 'Invalid request body';
+        res.status(400).json(firstError);
         return;
       }
       const { targetUsername } = validationResult.data;
@@ -34,22 +29,12 @@ const followController = {
         .model('User')
         .findOne({ username: targetUsername });
       if (!targetUser) {
-        res.status(404).json(
-          followErrorResponse.parse({
-            success: false,
-            message: 'Target user not found',
-          }),
-        );
+        res.status(404).json('Target user not found');
         return;
       }
       const targetUserId = targetUser._id.toString();
       if (userId === targetUserId) {
-        res.status(400).json(
-          followErrorResponse.parse({
-            success: false,
-            message: 'Cannot follow yourself',
-          }),
-        );
+        res.status(400).json('Cannot follow yourself');
         return;
       }
       const existing = await Follow.findOne({
@@ -74,6 +59,25 @@ const followController = {
         );
       }
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        const errors = Object.values(error.errors).map(
+          (err: { message: string }) => err.message,
+        );
+        res.status(400).json(errors[0] || 'Database validation failed');
+        return;
+      }
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        (error as unknown as { code: number }).code === 11000
+      ) {
+        res.status(409).json('Duplicate follow entry');
+        return;
+      }
+      if (error instanceof Error) {
+        res.status(400).json(error.message || 'Unknown error');
+        return;
+      }
       next(error);
     }
   },

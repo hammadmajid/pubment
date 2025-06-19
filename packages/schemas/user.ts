@@ -68,11 +68,7 @@ export const userIdRequest = z.object({
   userId: z.string(),
 });
 
-export const userErrorResponse = z.object({
-  success: z.literal(false),
-  message: z.string(),
-  errors: z.array(z.any()).optional(),
-});
+export const userErrorResponse = z.string();
 
 export const publicUserSchema = z.object({
   username: registrationSchema.shape.username,
