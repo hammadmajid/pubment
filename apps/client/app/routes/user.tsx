@@ -36,32 +36,31 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   const loggedInUser = session.get('username');
-  const isFollowing = userDataResult.value.user.followers.some(
+  const user = userDataResult.value.user;
+  const posts = user.posts;
+  const followers = user.followers.map((f) => ({
+    _id: f._id!,
+    username: f.username!,
+    name: f.name!,
+    profilePicture: f.profilePicture!,
+  }));
+  const following = user.following.map((f) => ({
+    _id: f._id!,
+    username: f.username!,
+    name: f.name!,
+    profilePicture: f.profilePicture!,
+  }));
+  const isFollowing = user.followers.some(
     (follower) => follower.username === loggedInUser,
   );
 
   return {
     userId: session.get('userId'),
     username: session.get('username'),
-    user: userDataResult.value.user,
-    posts: userDataResult.value.user.posts,
-    // assert these to prevent typescript from complaining
-    followers: userDataResult.value.user.followers.map((f) => {
-      return {
-        _id: f._id!,
-        username: f.username!,
-        name: f.name!,
-        profilePicture: f.profilePicture!,
-      };
-    }),
-    following: userDataResult.value.user.following.map((f) => {
-      return {
-        _id: f._id!,
-        username: f.username!,
-        name: f.name!,
-        profilePicture: f.profilePicture!,
-      };
-    }),
+    user,
+    posts,
+    followers,
+    following,
     isFollowing,
     headers: {
       'Set-Cookie': await commitSession(session),
@@ -79,14 +78,11 @@ export function meta({ params }: Route.MetaArgs) {
 }
 
 export default function UserPage({ loaderData }: Route.ComponentProps) {
+  const { user, userId, username, posts, following, followers, isFollowing } =
+    loaderData;
+
   const fetcher = useFetcher();
   const busy = fetcher.state !== 'idle';
-
-  const user = loaderData.user;
-  const posts = loaderData.posts;
-  const following = loaderData.following;
-  const followers = loaderData.followers;
-  const isFollowing = loaderData.isFollowing;
 
   const getInitials = (name: string) => {
     return name
@@ -149,8 +145,8 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
               key={post._id}
               isClickable={true}
               post={post}
-              username={loaderData.username}
-              isLiked={post.likes.includes(loaderData.userId)}
+              username={username}
+              isLiked={post.likes.includes(userId)}
             />
           ))
         )}

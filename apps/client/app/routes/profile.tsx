@@ -33,38 +33,35 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     throw data(userDataResult.error.message, 500);
   }
 
+  const user = userDataResult.value.user;
+  const posts = user.posts;
+  const followers = user.followers.map((f) => ({
+    _id: f._id!,
+    username: f.username!,
+    name: f.name!,
+    profilePicture: f.profilePicture!,
+  }));
+  const following = user.following.map((f) => ({
+    _id: f._id!,
+    username: f.username!,
+    name: f.name!,
+    profilePicture: f.profilePicture!,
+  }));
+
   return {
     userId: session.get('userId'),
-    user: userDataResult.value.user,
-    posts: userDataResult.value.user.posts,
-    // assert these to prevent typescript from complaining
-    followers: userDataResult.value.user.followers.map((f) => {
-      return {
-        _id: f._id!,
-        username: f.username!,
-        name: f.name!,
-        profilePicture: f.profilePicture!,
-      };
-    }),
-    following: userDataResult.value.user.following.map((f) => {
-      return {
-        _id: f._id!,
-        username: f.username!,
-        name: f.name!,
-        profilePicture: f.profilePicture!,
-      };
-    }),
-    header: {
+    user,
+    posts,
+    followers,
+    following,
+    headers: {
       'Set-Cookie': await commitSession(session),
     },
   };
 }
 
 export default function Component({ loaderData }: Route.ComponentProps) {
-  const user = loaderData.user;
-  const posts = loaderData.posts;
-  const followers = loaderData.followers;
-  const following = loaderData.following;
+  const { user, posts, followers, following, userId } = loaderData;
 
   const getInitials = (name: string) => {
     return name
@@ -116,7 +113,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
               isClickable={true}
               post={post}
               username={user.username}
-              isLiked={post.likes.includes(loaderData.userId)}
+              isLiked={post.likes.includes(userId)}
             />
           ))
         )}

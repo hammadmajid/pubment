@@ -35,10 +35,16 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     throw data(result.error.message, 500);
   }
 
+  const { post, comments } = result.value.data;
+
   return {
     userId: session.get('userId'),
     username: session.get('username'),
-    data: result.value.data,
+    post,
+    comments,
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
   };
 }
 
@@ -53,14 +59,12 @@ export function meta({ params }: Route.MetaArgs) {
 }
 
 export default function PostDetails({ loaderData }: Route.ComponentProps) {
-  const userId = loaderData.userId;
-  const post = loaderData.data.post;
-  const comments = loaderData.data.comments;
-  const isLiked = loaderData.data.post.likes.includes(userId);
+  const { userId, username, post, comments } = loaderData;
+  const isLiked = loaderData.post.likes.includes(userId);
 
   return (
     <div className='flex flex-col gap-6 px-8 py-2 mb-12'>
-      <Post post={post} username={loaderData.username} isLiked={isLiked} />
+      <Post post={post} username={username} isLiked={isLiked} />
       <div className='mt-4 ml-8'>
         <h3 className='text-lg font-semibold'>Comments</h3>
         {comments.length > 0 ? (

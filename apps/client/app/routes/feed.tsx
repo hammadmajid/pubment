@@ -44,10 +44,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw data(result.error.message, 500);
   }
 
+  const { data: posts, pagination } = result.value;
+
   return {
     username: session.get('username'),
     userId: session.get('userId'),
-    data: result.value,
+    posts,
+    pagination,
     page,
     headers: {
       'Set-Cookie': await commitSession(session),
@@ -56,10 +59,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Feed({ loaderData }: Route.ComponentProps) {
+  const { page = 1, pagination, posts, userId, username } = loaderData;
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const page = loaderData.data.pagination.page || 1;
-  const pagination = loaderData.data.pagination;
 
   if (loaderData instanceof Error) {
     return (
@@ -76,16 +79,16 @@ export default function Feed({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className='flex flex-col gap-3 px-8 py-2 mb-12'>
-      {loaderData.data.data.length === 0 ? (
+      {posts.length === 0 ? (
         <div className='text-center text-muted-foreground'>No posts yet.</div>
       ) : (
-        loaderData.data.data.map((post) => (
+        posts.map((post) => (
           <Post
             key={post._id}
             isClickable={true}
             post={post}
-            username={loaderData.username}
-            isLiked={post.likes.includes(loaderData.userId)}
+            username={username}
+            isLiked={post.likes.includes(userId)}
           />
         ))
       )}
