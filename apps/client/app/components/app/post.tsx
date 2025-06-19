@@ -36,7 +36,7 @@ export function Post({
         <div className='flex items-center gap-3'>
           <Avatar>
             <AvatarImage
-              src={post.author.profilePicture}
+              src={post.author.profilePicture ?? undefined}
               alt={post.author.name}
             />
             <AvatarFallback>{post.author.name?.[0] || '?'}</AvatarFallback>

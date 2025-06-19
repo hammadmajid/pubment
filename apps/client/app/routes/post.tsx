@@ -3,7 +3,7 @@ import {
   postLikeResponse,
   postResponse,
 } from '@repo/schemas/post';
-import { Link, data, redirect } from 'react-router';
+import { Link, data, redirect, useFetcher } from 'react-router';
 import { Post } from '~/components/app/post';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Card } from '~/components/ui/card';
@@ -12,6 +12,12 @@ import { safeFetch } from '~/lib/fetch';
 import { getRelativeTime } from '~/lib/utils';
 import { commitSession, getSession } from '~/session.server';
 import type { Route } from './+types/post';
+import {
+  commentCreateResponse,
+  commentErrorResponse,
+} from '@repo/schemas/comment';
+import { Textarea } from '~/components/ui/textarea';
+import { Button } from '~/components/ui/button';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -62,11 +68,21 @@ export default function PostDetails({ loaderData }: Route.ComponentProps) {
   const { userId, username, post, comments } = loaderData;
   const isLiked = loaderData.post.likes.includes(userId ?? '');
 
+  const fetcher = useFetcher();
+  const busy = fetcher.state !== 'idle';
+
   return (
     <div className='flex flex-col gap-6 px-8 py-2 mb-12'>
       <Post post={post} username={username ?? ''} isLiked={isLiked} />
       <div className='mt-4 ml-8'>
         <h3 className='text-lg font-semibold'>Comments</h3>
+        <div className='my-4'>
+          <fetcher.Form method='post' className='grid gap-2'>
+            <input hidden name='intent' value='comment' />
+            <Textarea className='w-full' name='content' required />
+            <Button>Comment</Button>
+          </fetcher.Form>
+        </div>
         {comments.length > 0 ? (
           <ul className='mt-2 flex flex-col gap-4'>
             {comments.map((comment) => (
@@ -121,8 +137,24 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   if (intent === 'comment') {
     const content = formData.get('content') as string;
-    // TODO: post comment
+    const result = await safeFetch(
+      {
+        endpoint: '/comment/create',
+        body: {
+          postId,
+          content,
+          authorId: session.get('userId'),
+        },
+      },
+      commentCreateResponse,
+      commentErrorResponse,
+      session.get('token'),
+    );
+    if (result.ok !== true) {
+      throw data(`Failed to comment on post: ${postId}`, 500);
+    }
   } else {
+    // intent: like toggle
     const result = await safeFetch(
       {
         endpoint: `/post/${postId}/like`,
