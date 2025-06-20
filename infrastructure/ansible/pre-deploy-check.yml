@@ -1,0 +1,113 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  tasks:
+    - name: Check system requirements
+      fail:
+        msg: "Ubuntu version not supported. Requires Ubuntu 18.04 or later"
+      when: ansible_distribution != "Ubuntu" or ansible_distribution_version is version('18.04', '<')
+
+    - name: Check available disk space
+      fail:
+        msg: "Insufficient disk space. Requires at least 2GB free"
+      when: ansible_mounts[0].size_available < 2147483648
+
+    - name: Check available memory
+      fail:
+        msg: "Insufficient memory. Requires at least 1GB RAM"
+      when: ansible_memtotal_mb < 1024
+
+    - name: Check if required ports are available
+      wait_for:
+        port: "{{ item }}"
+        host: "0.0.0.0"
+        state: stopped
+        timeout: 5
+      with_items:
+        - 3000
+      ignore_errors: yes
+      register: port_check
+
+    - name: Warn about occupied ports
+      debug:
+        msg: "Warning: Port {{ item.item }} appears to be in use"
+      when: item.failed is defined and item.failed
+      with_items: "{{ port_check.results }}"
+
+    - name: Check internet connectivity
+      uri:
+        url: https://github.com
+        method: GET
+        timeout: 10
+      register: internet_check
+
+    - name: Fail if no internet access
+      fail:
+        msg: "No internet connectivity. Required for Docker installation and repository cloning"
+      when: internet_check.status != 200
+
+    - name: Check if git is available
+      command: which git
+      register: git_check
+      ignore_errors: yes
+
+    - name: Install git if missing
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+      when: git_check.rc != 0
+
+- hosts: backend
+  become: yes
+  tasks:
+    - name: Check MongoDB URI connectivity
+      uri:
+        url: "{{ MONGODB_URI }}"
+        method: GET
+        timeout: 10
+      environment:
+        MONGODB_URI: "{{ lookup('env', 'MONGODB_URI') }}"
+      ignore_errors: yes
+      register: mongo_check
+      when: lookup('env', 'MONGODB_URI') != ""
+
+    - name: Warn about MongoDB connectivity
+      debug:
+        msg: "Warning: Could not verify MongoDB connectivity"
+      when: mongo_check is defined and mongo_check.failed
+
+    - name: Check if backend port is available
+      wait_for:
+        port: 3000
+        host: "0.0.0.0"
+        state: stopped
+        timeout: 5
+      ignore_errors: yes
+
+- hosts: frontend
+  become: yes
+  tasks:
+    - name: Check if HTTP ports are available
+      wait_for:
+        port: "{{ item }}"
+        host: "0.0.0.0"
+        state: stopped
+        timeout: 5
+      with_items:
+        - 80
+        - 443
+        - 3000
+      ignore_errors: yes
+      register: frontend_port_check
+
+    - name: Check domain DNS resolution
+      command: nslookup pubment.xyz
+      register: dns_check
+      ignore_errors: yes
+
+    - name: Warn about DNS resolution
+      debug:
+        msg: "Warning: Could not resolve pubment.xyz domain"
+      when: dns_check.rc != 0

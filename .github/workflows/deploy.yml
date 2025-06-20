@@ -7,63 +7,16 @@ on:
 env:
   AWS_REGION: eu-central-1
   SSH_KEY_PATH: ~/.ssh/code-alpha.pem
+  VAULT_PASS_FILE: ~/.vault_pass.txt
 
 jobs:
-  validate-infrastructure:
+  deploy:
     runs-on: ubuntu-latest
     outputs:
-      frontend-ip: ${{ steps.get-ips.outputs.frontend-ip }}
-      backend-ip: ${{ steps.get-ips.outputs.backend-ip }}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+      frontend-ip: ${{ steps.get_ips.outputs.frontend_ip }}
+      backend-ip: ${{ steps.get_ips.outputs.backend_ip }}
+      backend-private-ip: ${{ steps.get_ips.outputs.backend_private_ip }}
 
-      - name: Validate and get instance IPs
-        id: get-ips
-        run: |
-          # Get frontend instance
-          FRONTEND_DATA=$(aws ec2 describe-instances \
-            --filters "Name=tag:Type,Values=frontend" "Name=instance-state-name,Values=running" \
-            --query "Reservations[*].Instances[*].[PublicIpAddress,State.Name]" \
-            --output text)
-
-          # Get backend instance
-          BACKEND_DATA=$(aws ec2 describe-instances \
-            --filters "Name=tag:Type,Values=backend" "Name=instance-state-name,Values=running" \
-            --query "Reservations[*].Instances[*].[PublicIpAddress,State.Name]" \
-            --output text)
-
-          # Validate frontend
-          if [ -z "$FRONTEND_DATA" ] || [ "$FRONTEND_DATA" = "None" ]; then
-            echo "❌ No running frontend instance found"
-            exit 1
-          fi
-          FRONTEND_IP=$(echo "$FRONTEND_DATA" | awk '{print $1}')
-
-          # Validate backend
-          if [ -z "$BACKEND_DATA" ] || [ "$BACKEND_DATA" = "None" ]; then
-            echo "❌ No running backend instance found"
-            exit 1
-          fi
-          BACKEND_IP=$(echo "$BACKEND_DATA" | awk '{print $1}')
-
-          echo "✅ Frontend IP: $FRONTEND_IP"
-          echo "✅ Backend IP: $BACKEND_IP"
-
-          echo "frontend-ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
-          echo "backend-ip=$BACKEND_IP" >> $GITHUB_OUTPUT
-
-  deploy:
-    needs: validate-infrastructure
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [frontend, backend]
-      fail-fast: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -80,102 +33,203 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install Ansible
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ansible
+          pip install ansible boto3 botocore
 
-      - name: Set up SSH
+      - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.ANSIBLE_PRIVATE_KEY }}" > ${{ env.SSH_KEY_PATH }}
           chmod 600 ${{ env.SSH_KEY_PATH }}
 
-      - name: Set service IP
-        id: service-ip
+      - name: Create Ansible vault password file
         run: |
-          if [ "${{ matrix.service }}" = "frontend" ]; then
-            echo "ip=${{ needs.validate-infrastructure.outputs.frontend-ip }}" >> $GITHUB_OUTPUT
-          else
-            echo "ip=${{ needs.validate-infrastructure.outputs.backend-ip }}" >> $GITHUB_OUTPUT
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ${{ env.VAULT_PASS_FILE }}
+          chmod 600 ${{ env.VAULT_PASS_FILE }}
+
+      - name: Validate and get instance IPs
+        id: get_ips
+        run: |
+          get_instance_data() {
+            local tag_value=$1
+            aws ec2 describe-instances \
+              --filters "Name=tag:Type,Values=$tag_value" "Name=instance-state-name,Values=running" \
+              --query "Reservations[*].Instances[*].[PublicIpAddress,PrivateIpAddress]" \
+              --output text | head -1
+          }
+
+          # Get frontend data
+          FRONTEND_DATA=$(get_instance_data "frontend")
+          FRONTEND_IP=$(echo $FRONTEND_DATA | awk '{print $1}')
+
+          # Get backend data
+          BACKEND_DATA=$(get_instance_data "backend")
+          BACKEND_IP=$(echo $BACKEND_DATA | awk '{print $1}')
+          BACKEND_PRIVATE_IP=$(echo $BACKEND_DATA | awk '{print $2}')
+
+          # Validate IPs exist
+          if [[ -z "$FRONTEND_IP" || "$FRONTEND_IP" == "None" ]]; then
+            echo "❌ No running frontend instance found"
+            exit 1
           fi
+
+          if [[ -z "$BACKEND_IP" || "$BACKEND_IP" == "None" ]]; then
+            echo "❌ No running backend instance found"
+            exit 1
+          fi
+
+          echo "✅ Found frontend: $FRONTEND_IP"
+          echo "✅ Found backend: $BACKEND_IP (private: $BACKEND_PRIVATE_IP)"
+
+          # Set outputs
+          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
+          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
+          echo "backend_private_ip=$BACKEND_PRIVATE_IP" >> $GITHUB_OUTPUT
 
       - name: Test SSH connectivity
         run: |
-          ssh-keyscan ${{ steps.service-ip.outputs.ip }} >> ~/.ssh/known_hosts
+          # Add to known hosts
+          ssh-keyscan ${{ steps.get_ips.outputs.frontend_ip }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ steps.get_ips.outputs.backend_ip }} >> ~/.ssh/known_hosts
 
-          # Test SSH connection with timeout
-          timeout 30 ssh -i ${{ env.SSH_KEY_PATH }} -o ConnectTimeout=10 -o StrictHostKeyChecking=no \
-            ubuntu@${{ steps.service-ip.outputs.ip }} "echo 'SSH connection successful'"
+          # Test SSH to frontend
+          echo "Testing SSH to frontend..."
+          ssh -i ${{ env.SSH_KEY_PATH }} -o ConnectTimeout=10 -o BatchMode=yes \
+            ubuntu@${{ steps.get_ips.outputs.frontend_ip }} 'echo "Frontend SSH OK"'
 
-      - name: Create dynamic inventory
+          # Test SSH to backend via jump host
+          echo "Testing SSH to backend via jump host..."
+          ssh -i ${{ env.SSH_KEY_PATH }} -o ConnectTimeout=10 -o BatchMode=yes \
+            -o ProxyJump=ubuntu@${{ steps.get_ips.outputs.frontend_ip }} \
+            ubuntu@${{ steps.get_ips.outputs.backend_ip }} 'echo "Backend SSH OK"'
+
+      - name: Generate dynamic inventory
         run: |
           mkdir -p inventory
           cat > inventory/hosts.ini << EOF
-          [${{ matrix.service }}]
-          ${{ steps.service-ip.outputs.ip }} ansible_user=ubuntu ansible_ssh_private_key_file=${{ env.SSH_KEY_PATH }}
+          [frontend]
+          ${{ steps.get_ips.outputs.frontend_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=${{ env.SSH_KEY_PATH }}
+
+          [backend]
+          ${{ steps.get_ips.outputs.backend_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=${{ env.SSH_KEY_PATH }} ansible_ssh_common_args='-o ProxyJump=ubuntu@${{ steps.get_ips.outputs.frontend_ip }}'
+
+          [all:vars]
+          ansible_ssh_common_args='-o StrictHostKeyChecking=no'
           EOF
 
-      - name: Create Ansible vault password file
-        run: |
-          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ~/.vault_pass.txt
-          chmod 600 ~/.vault_pass.txt
+          # Update frontend_vars.yml with current backend private IP
+          cat > infrastructure/ansible/frontend_vars.yml << EOF
+          backend_private_ip: "${{ steps.get_ips.outputs.backend_private_ip }}"
+          EOF
+
+          echo "Generated inventory and updated frontend vars"
 
       - name: Run pre-deployment checks
         run: |
-          ansible-playbook -i inventory/hosts.ini \
-            infrastructure/ansible/pre-deploy-check.yml \
-            --vault-password-file ~/.vault_pass.txt \
-            --limit ${{ matrix.service }}
-        env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          echo "🔍 Running pre-deployment checks..."
+          ansible-playbook -i inventory/hosts.ini infrastructure/ansible/pre-deploy-check.yml \
+            --vault-password-file ${{ env.VAULT_PASS_FILE }} \
+            -e "MONGODB_URI=${{ secrets.MONGODB_URI }}" \
+            -e "JWT_SECRET=${{ secrets.JWT_SECRET }}"
 
-      - name: Deploy ${{ matrix.service }}
-        id: deploy
+      - name: Validate Ansible playbooks
         run: |
-          ansible-playbook -i inventory/hosts.ini \
-            infrastructure/ansible/${{ matrix.service }}.yml \
-            --vault-password-file ~/.vault_pass.txt
-        env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ansible-playbook --syntax-check -i inventory/hosts.ini infrastructure/ansible/frontend.yml
+          ansible-playbook --syntax-check -i inventory/hosts.ini infrastructure/ansible/backend.yml
+          ansible-playbook --syntax-check -i inventory/hosts.ini infrastructure/ansible/health-check.yml
 
-      - name: Verify deployment
+      - name: Deploy backend
         run: |
-          ansible-playbook -i inventory/hosts.ini \
-            infrastructure/ansible/verify-${{ matrix.service }}.yml \
-            --vault-password-file ~/.vault_pass.txt
-        env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          echo "🚀 Deploying backend..."
+          ansible-playbook -i inventory/hosts.ini infrastructure/ansible/backend.yml \
+            --vault-password-file ${{ env.VAULT_PASS_FILE }} \
+            -e "MONGODB_URI=${{ secrets.MONGODB_URI }}" \
+            -e "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            -v
 
-      - name: Cleanup on failure
-        if: failure()
+      - name: Deploy frontend
         run: |
-          echo "🔄 Running rollback for ${{ matrix.service }}"
-          ansible-playbook -i inventory/hosts.ini \
-            infrastructure/ansible/rollback-${{ matrix.service }}.yml \
-            --vault-password-file ~/.vault_pass.txt || true
+          echo "🚀 Deploying frontend..."
+          ansible-playbook -i inventory/hosts.ini infrastructure/ansible/frontend.yml \
+            --vault-password-file ${{ env.VAULT_PASS_FILE }} \
+            -e "MONGODB_URI=${{ secrets.MONGODB_URI }}" \
+            -e "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            -v
+
+      - name: Run health checks
+        run: |
+          echo "🔍 Running health checks..."
+          ansible-playbook -i inventory/hosts.ini infrastructure/ansible/health-check.yml \
+            --vault-password-file ${{ env.VAULT_PASS_FILE }}
 
       - name: Cleanup sensitive files
         if: always()
         run: |
-          rm -f ~/.vault_pass.txt
           rm -f ${{ env.SSH_KEY_PATH }}
+          rm -f ${{ env.VAULT_PASS_FILE }}
 
-  post-deploy:
-    needs: [validate-infrastructure, deploy]
-    if: success()
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo "Frontend: https://pubment.xyz"
+          echo "Backend: http://${{ steps.get_ips.outputs.backend_ip }}:3000"
+
+  rollback:
     runs-on: ubuntu-latest
+    needs: deploy
+    if: failure()
     steps:
-      - name: Run integration tests
-        run: |
-          echo "🧪 Running integration tests between frontend and backend"
-          # Add your integration test commands here
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Notify success
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup for rollback
         run: |
-          echo "✅ Deployment completed successfully"
-          echo "Frontend: http://${{ needs.validate-infrastructure.outputs.frontend-ip }}"
-          echo "Backend: http://${{ needs.validate-infrastructure.outputs.backend-ip }}"
+          python -m pip install --upgrade pip
+          pip install ansible boto3 botocore
+          mkdir -p ~/.ssh inventory
+          echo "${{ secrets.ANSIBLE_PRIVATE_KEY }}" > ${{ env.SSH_KEY_PATH }}
+          chmod 600 ${{ env.SSH_KEY_PATH }}
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ${{ env.VAULT_PASS_FILE }}
+
+      - name: Generate rollback inventory
+        if: needs.deploy.outputs.frontend-ip && needs.deploy.outputs.backend-ip
+        run: |
+          cat > inventory/hosts.ini << EOF
+          [frontend]
+          ${{ needs.deploy.outputs.frontend-ip }} ansible_user=ubuntu ansible_ssh_private_key_file=${{ env.SSH_KEY_PATH }}
+
+          [backend]
+          ${{ needs.deploy.outputs.backend-ip }} ansible_user=ubuntu ansible_ssh_private_key_file=${{ env.SSH_KEY_PATH }} ansible_ssh_common_args='-o ProxyJump=ubuntu@${{ needs.deploy.outputs.frontend-ip }}'
+
+          [all:vars]
+          ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+          EOF
+
+      - name: Execute rollback
+        if: needs.deploy.outputs.frontend-ip && needs.deploy.outputs.backend-ip
+        run: |
+          echo "🔄 Executing rollback procedures..."
+
+          # Add known hosts
+          ssh-keyscan ${{ needs.deploy.outputs.frontend-ip }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ needs.deploy.outputs.backend-ip }} >> ~/.ssh/known_hosts
+
+          # Run rollback playbook
+          ansible-playbook -i inventory/hosts.ini infrastructure/ansible/rollback.yml \
+            --vault-password-file ${{ env.VAULT_PASS_FILE }}
+
+      - name: Cleanup rollback files
+        if: always()
+        run: |
+          rm -f ${{ env.SSH_KEY_PATH }}
+          rm -f ${{ env.VAULT_PASS_FILE }}
