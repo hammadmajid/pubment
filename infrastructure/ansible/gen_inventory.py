@@ -3,9 +3,9 @@ import json
 with open('tf_outputs.json') as f:
     data = json.load(f)
 
-frontend_ip = data['frontend_instance_public_ip']['value']
-backend_ip = data['backend_instance_public_ip']['value']
-backend_private_ip = data['backend_instance_private_ip']['value']
+frontend_ip = data['frontend_vm_public_ip']['value']
+backend_ip = data['backend_vm_public_ip']['value']
+backend_private_ip = data['backend_vm_private_ip']['value']
 
 # Write inventory.ini
 with open('inventory.ini', 'w') as inv:

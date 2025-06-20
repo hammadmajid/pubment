@@ -1,51 +1,45 @@
-output "frontend_security_group_id" {
-  description = "ID of the frontend security group"
-  value       = aws_security_group.frontend.id
+output "frontend_nsg_id" {
+  description = "ID of the frontend network security group"
+  value       = azurerm_network_security_group.frontend.id
 }
 
-output "backend_security_group_id" {
-  description = "ID of the backend security group"
-  value       = aws_security_group.backend.id
+output "backend_nsg_id" {
+  description = "ID of the backend network security group"
+  value       = azurerm_network_security_group.backend.id
 }
 
-output "backend_security_group_arn" {
-  description = "ARN of the backend security group"
-  value       = aws_security_group.backend.arn
+output "frontend_vm_id" {
+  description = "ID of the frontend Azure VM"
+  value       = azurerm_linux_virtual_machine.frontend.id
 }
 
-# EC2 Instance Outputs
-output "frontend_instance_id" {
-  description = "ID of the frontend EC2 instance"
-  value       = aws_instance.frontend.id
+output "frontend_vm_public_ip" {
+  description = "Public IP address of the frontend VM"
+  value       = azurerm_public_ip.frontend.ip_address
 }
 
-output "frontend_instance_public_ip" {
-  description = "Public IP address of the frontend instance"
-  value       = aws_instance.frontend.public_ip
+output "frontend_vm_private_ip" {
+  description = "Private IP address of the frontend VM"
+  value       = azurerm_network_interface.frontend.private_ip_address
 }
 
-output "frontend_instance_private_ip" {
-  description = "Private IP address of the frontend instance"
-  value       = aws_instance.frontend.private_ip
+output "backend_vm_id" {
+  description = "ID of the backend Azure VM"
+  value       = azurerm_linux_virtual_machine.backend.id
 }
 
-output "backend_instance_id" {
-  description = "ID of the backend EC2 instance"
-  value       = aws_instance.backend.id
+output "backend_vm_private_ip" {
+  description = "Private IP address of the backend VM"
+  value       = azurerm_network_interface.backend.private_ip_address
 }
 
-output "backend_instance_private_ip" {
-  description = "Private IP address of the backend instance"
-  value       = aws_instance.backend.private_ip
+output "backend_vm_public_ip" {
+  description = "Public IP address of the backend VM"
+  value       = azurerm_public_ip.backend.ip_address
 }
 
-output "backend_instance_public_ip" {
-  description = "Public IP address of the backend instance"
-  value       = aws_instance.backend.public_ip
-}
-
-output "backend_security_group_name" {
-  description = "Name of the backend security group"
-  value       = aws_security_group.backend.name
+output "backend_nsg_name" {
+  description = "Name of the backend network security group"
+  value       = azurerm_network_security_group.backend.name
 }
 
