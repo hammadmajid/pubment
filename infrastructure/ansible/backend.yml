@@ -52,6 +52,7 @@
         content: |
           MONGODB_URI={{ MONGODB_URI }}
           JWT_SECRET={{ JWT_SECRET }}
+          CORS_ORIGIN=https://pubment.xyz
         owner: ubuntu
         group: ubuntu
         mode: '0600'
