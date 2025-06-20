@@ -1,52 +1,47 @@
 {
-  "backend_instance_id": {
+  "backend_nsg_id": {
     "sensitive": false,
     "type": "string",
-    "value": "i-0b2351995b7767282"
+    "value": "/subscriptions/5f342674-c88c-4f61-aec2-be5442731b9e/resourceGroups/pubment-rg/providers/Microsoft.Network/networkSecurityGroups/backend-nsg"
   },
-  "backend_instance_private_ip": {
+  "backend_nsg_name": {
     "sensitive": false,
     "type": "string",
-    "value": "172.31.21.19"
+    "value": "backend-nsg"
   },
-  "backend_instance_public_ip": {
+  "backend_vm_id": {
     "sensitive": false,
     "type": "string",
-    "value": "3.72.74.219"
+    "value": "/subscriptions/5f342674-c88c-4f61-aec2-be5442731b9e/resourceGroups/pubment-rg/providers/Microsoft.Compute/virtualMachines/backend-vm"
   },
-  "backend_security_group_arn": {
+  "backend_vm_private_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "arn:aws:ec2:eu-central-1:257394475547:security-group/sg-04b0f6751b38f33f0"
+    "value": "10.0.1.5"
   },
-  "backend_security_group_id": {
+  "backend_vm_public_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "sg-04b0f6751b38f33f0"
+    "value": "4.210.163.239"
   },
-  "backend_security_group_name": {
+  "frontend_nsg_id": {
     "sensitive": false,
     "type": "string",
-    "value": "backend-sg"
+    "value": "/subscriptions/5f342674-c88c-4f61-aec2-be5442731b9e/resourceGroups/pubment-rg/providers/Microsoft.Network/networkSecurityGroups/frontend-nsg"
   },
-  "frontend_instance_id": {
+  "frontend_vm_id": {
     "sensitive": false,
     "type": "string",
-    "value": "i-0e9bc25dcd28f0774"
+    "value": "/subscriptions/5f342674-c88c-4f61-aec2-be5442731b9e/resourceGroups/pubment-rg/providers/Microsoft.Compute/virtualMachines/frontend-vm"
   },
-  "frontend_instance_private_ip": {
+  "frontend_vm_private_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "172.31.18.59"
+    "value": "10.0.1.4"
   },
-  "frontend_instance_public_ip": {
+  "frontend_vm_public_ip": {
     "sensitive": false,
     "type": "string",
-    "value": "3.66.171.140"
-  },
-  "frontend_security_group_id": {
-    "sensitive": false,
-    "type": "string",
-    "value": "sg-03da0a32b439e6449"
+    "value": "51.136.90.132"
   }
 }
