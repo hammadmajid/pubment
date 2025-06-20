@@ -6,28 +6,39 @@
     - name: Update apt cache and upgrade
       apt: update_cache=yes upgrade=dist
 
-    - name: Install Node.js 23, git, curl
+    - name: Install required packages for Docker
       apt:
         name:
-          - git
+          - apt-transport-https
+          - ca-certificates
           - curl
+          - software-properties-common
         state: present
 
-    - name: Add Node.js 23.x repo
-      shell: curl -fsSL https://deb.nodesource.com/setup_23.x | bash -
-      args:
-        warn: false
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
 
-    - name: Install Node.js
-      apt: name=nodejs state=present
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
 
-    - name: Install pnpm and pm2 globally
-      npm:
-        name: "{{ item }}"
-        global: yes
-      loop:
-        - pnpm
-        - pm2
+    - name: Install Docker and Docker Compose
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
 
     - name: Clone repository
       git:
@@ -35,7 +46,7 @@
         dest: /opt/mini-social-app
         version: main
 
-    - name: Create root .env
+    - name: Create backend .env
       copy:
         dest: /opt/mini-social-app/.env
         content: |
@@ -45,26 +56,20 @@
         group: ubuntu
         mode: '0600'
 
-    - name: Install dependencies
-      shell: pnpm install
+    - name: Build server Docker image
+      shell: docker build --file apps/server/Dockerfile -t mini-social-server .
       args:
         chdir: /opt/mini-social-app
 
-    - name: Build server
-      shell: pnpm build --filter=server
-      args:
-        chdir: /opt/mini-social-app
-
-    - name: Start backend with PM2
-      shell: pm2 start apps/server/dist/server.mjs --name backend --env production
-      args:
-        chdir: /opt/mini-social-app
-
-    - name: Save PM2 process list
-      shell: pm2 save
-
-    - name: Setup PM2 startup
-      shell: pm2 startup systemd -u ubuntu --hp /home/ubuntu
+    - name: Run server container
+      docker_container:
+        name: mini-social-server
+        image: mini-social-server
+        restart_policy: always
+        env_file: /opt/mini-social-app/.env
+        ports:
+          - "3000:3000"
+        state: started
 
     - name: Allow only internal traffic on port 3000
       ufw:

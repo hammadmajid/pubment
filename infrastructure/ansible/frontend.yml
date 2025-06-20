@@ -7,35 +7,39 @@
     - name: Update apt cache and upgrade
       apt: update_cache=yes upgrade=dist
 
-    - name: Install Node.js 23, git, curl, Caddy
+    - name: Install required packages for Docker
       apt:
         name:
-          - git
-          - curl
-          - debian-keyring
-          - debian-archive-keyring
           - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
         state: present
 
-    - name: Add Node.js 23.x repo
-      shell: curl -fsSL https://deb.nodesource.com/setup_23.x | bash -
-      args:
-        warn: false
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
 
-    - name: Install Node.js
-      apt: name=nodejs state=present
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
 
-    - name: Install Caddy
+    - name: Install Docker and Docker Compose
       apt:
-        deb: https://github.com/caddyserver/caddy/releases/download/v2.7.6/caddy_2.7.6_linux_amd64.deb
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
 
-    - name: Install pnpm and pm2 globally
-      npm:
-        name: "{{ item }}"
-        global: yes
-      loop:
-        - pnpm
-        - pm2
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
 
     - name: Clone repository
       git:
@@ -52,26 +56,24 @@
         group: ubuntu
         mode: '0600'
 
-    - name: Install dependencies
-      shell: pnpm install
+    - name: Build client Docker image
+      shell: docker build --file apps/client/Dockerfile -t mini-social-client .
       args:
         chdir: /opt/mini-social-app
 
-    - name: Build client
-      shell: pnpm build --filter=client
-      args:
-        chdir: /opt/mini-social-app
+    - name: Run client container
+      docker_container:
+        name: mini-social-client
+        image: mini-social-client
+        restart_policy: always
+        env_file: /opt/mini-social-app/apps/client/.env
+        ports:
+          - "3000:3000"
+        state: started
 
-    - name: Start frontend with PM2
-      shell: pnpm run start
-      args:
-        chdir: /opt/mini-social-app/apps/client
-
-    - name: Save PM2 process list
-      shell: pm2 save
-
-    - name: Setup PM2 startup
-      shell: pm2 startup systemd -u ubuntu --hp /home/ubuntu
+    - name: Install Caddy
+      apt:
+        deb: https://github.com/caddyserver/caddy/releases/download/v2.7.6/caddy_2.7.6_linux_amd64.deb
 
     - name: Configure Caddyfile
       copy:
