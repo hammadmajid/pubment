@@ -1,8 +1,4 @@
-import {
-  postErrorResponse,
-  postLikeResponse,
-  postResponse,
-} from '@repo/schemas/post';
+import { postLikeResponse, postResponse } from '@repo/schemas/post';
 import { Link, data, redirect, useFetcher } from 'react-router';
 import { Post } from '~/components/app/post';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
@@ -12,12 +8,10 @@ import { safeFetch } from '~/lib/fetch';
 import { getRelativeTime } from '~/lib/utils';
 import { commitSession, getSession } from '~/session.server';
 import type { Route } from './+types/post';
-import {
-  commentCreateResponse,
-  commentErrorResponse,
-} from '@repo/schemas/comment';
+import { commentCreateResponse } from '@repo/schemas/comment';
 import { Textarea } from '~/components/ui/textarea';
 import { Button } from '~/components/ui/button';
+import { Loader2Icon, MessageCircle } from 'lucide-react';
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -79,7 +73,19 @@ export default function PostDetails({ loaderData }: Route.ComponentProps) {
           <fetcher.Form method='post' className='grid gap-2'>
             <input hidden name='intent' value='comment' />
             <Textarea className='w-full' name='content' required />
-            <Button>Comment</Button>
+            <Button className='flex items-center gap-2' disabled={busy}>
+              {busy ? (
+                <>
+                  <Loader2Icon className='animate-spin' />
+                  <span>Loading...</span>
+                </>
+              ) : (
+                <>
+                  <MessageCircle className='w-5 h-5' strokeWidth={2} />
+                  <span>Comment</span>
+                </>
+              )}
+            </Button>
           </fetcher.Form>
         </div>
         {comments.length > 0 ? (

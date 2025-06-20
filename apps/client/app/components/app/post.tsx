@@ -28,7 +28,6 @@ export function Post({
 }: PostProps) {
   const fetcher = useFetcher();
   const busy = fetcher.state !== 'idle';
-  console.log(isLiked);
 
   return (
     <Card key={post._id}>
