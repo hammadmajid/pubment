@@ -1,0 +1,72 @@
+name: Deploy with Ansible
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Add SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ANSIBLE_PRIVATE_KEY }}" > ~/.ssh/code-alpha.pem
+          chmod 600 ~/.ssh/code-alpha.pem
+        shell: bash
+
+      - name: Get frontend public IP
+        id: frontend_ip
+        run: |
+          IP=$(aws ec2 describe-instances --filters "Name=tag:Type,Values=frontend" --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
+          echo "ip=$IP" >> $GITHUB_OUTPUT
+
+      - name: Get backend public IP
+        id: backend_ip
+        run: |
+          IP=$(aws ec2 describe-instances --filters "Name=tag:Type,Values=backend" --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
+          echo "ip=$IP" >> $GITHUB_OUTPUT
+
+      - name: Add known hosts
+        run: |
+          ssh-keyscan ${{ steps.frontend_ip.outputs.ip }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ steps.backend_ip.outputs.ip }} >> ~/.ssh/known_hosts
+
+      - name: Create Ansible vault password file
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ~/.vault_pass.txt
+
+      - name: Run Ansible Playbook (frontend)
+        run: |
+          ansible-playbook -i infrastructure/ansible/inventory.ini infrastructure/ansible/frontend.yml --vault-password-file ~/.vault_pass.txt
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      - name: Run Ansible Playbook (backend)
+        run: |
+          ansible-playbook -i infrastructure/ansible/inventory.ini infrastructure/ansible/backend.yml --vault-password-file ~/.vault_pass.txt
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
