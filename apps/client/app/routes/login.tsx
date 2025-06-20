@@ -31,7 +31,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export function meta() {
   return [
-    { title: 'Login | Social Media' },
+    { title: 'Login | Pubment' },
     {
       name: 'description',
       content:
@@ -54,7 +54,7 @@ export default function Login({ loaderData }: Route.ComponentProps) {
             <div className='bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md'>
               <GalleryVerticalEnd className='size-4' />
             </div>
-            SocialApp
+            Pubment
           </Link>
         </div>
         <div className='flex flex-1 items-center justify-center'>

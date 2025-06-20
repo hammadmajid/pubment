@@ -1,5 +1,5 @@
 {
-  "name": "codealpha_mini-social-media-app",
+  "name": "pubment",
   "packageManager": "pnpm@10.6.2",
   "engines": {
     "node": ">=23"

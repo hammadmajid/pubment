@@ -64,7 +64,7 @@ export default function Footer() {
         </div>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
           <p className='text-xs text-muted-foreground'>
-            © {new Date().getFullYear()} SocialApp. All rights reserved.
+            © {new Date().getFullYear()} Pubment. All rights reserved.
           </p>
         </div>
       </div>

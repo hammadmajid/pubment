@@ -7,7 +7,7 @@ export default function Navbar() {
     <header className='border-b bg-background'>
       <div className='container flex h-16 items-center justify-between px-4 md:px-6'>
         <Link to='/' className='flex items-center gap-2'>
-          <span className='text-xl font-bold'>SocialApp</span>
+          <span className='text-xl font-bold'>Pubment</span>
         </Link>
         <nav className='flex items-center gap-4 sm:gap-6'>
           <Link

@@ -1,4 +1,4 @@
-# Mini Social Media MVP
+# Pubment
 
 A minimal, full-stack social media app. Features include user registration, following, posting, liking, and commenting. Built with a modern monorepo stack and ready for cloud deployment.
 
@@ -86,10 +86,10 @@ A minimal, full-stack social media app. Features include user registration, foll
 
 ```bash
 # server
-docker build --file apps/server/Dockerfile -t mini-social-server .
+docker build --file apps/server/Dockerfile -t pubment-server .
 
 # client
-docker build --file apps/client/Dockerfile -t mini-social-client .
+docker build --file apps/client/Dockerfile -t pubment-client .
 ```
 
 ---

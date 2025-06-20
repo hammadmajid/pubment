@@ -10,10 +10,10 @@ backend_private_ip = data['backend_vm_private_ip']['value']
 # Write inventory.ini
 with open('inventory.ini', 'w') as inv:
     inv.write(f"""[frontend]
-frontend ansible_host={frontend_ip} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/code-alpha.pem
+frontend ansible_host={frontend_ip} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/pubment.pem
 
 [backend]
-backend ansible_host={backend_ip} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/code-alpha.pem ansible_ssh_common_args='-o ProxyJump=ubuntu@{frontend_ip}'
+backend ansible_host={backend_ip} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/pubment.pem ansible_ssh_common_args='-o ProxyJump=ubuntu@{frontend_ip}'
 """)
 
 # Write frontend_vars.yml

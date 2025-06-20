@@ -4,7 +4,7 @@ import { destroySession, getSession } from '~/session.server';
 import type { Route } from './+types/settings';
 
 export function meta() {
-  return [{ title: 'Settings | Social Media' }];
+  return [{ title: 'Settings | Pubment' }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

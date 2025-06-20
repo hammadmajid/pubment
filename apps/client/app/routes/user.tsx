@@ -76,7 +76,7 @@ export function meta({ params }: Route.MetaArgs) {
   const username = params.username || 'user';
   return [
     {
-      title: `${username} | Social Media`,
+      title: `${username} | Pubment`,
     },
   ];
 }

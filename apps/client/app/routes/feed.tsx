@@ -19,7 +19,7 @@ import { commitSession, getSession } from '~/session.server';
 import type { Route } from './+types/feed';
 
 export function meta() {
-  return [{ title: 'Feed | Social Media' }];
+  return [{ title: 'Feed | Pubment' }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

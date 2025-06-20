@@ -7,7 +7,7 @@ import TechStack from '~/components/home/tech-stack';
 
 export function meta() {
   return [
-    { title: 'Social Media' },
+    { title: 'Pubment' },
     {
       name: 'description',
       content: 'Mini social media app built with modern stack',

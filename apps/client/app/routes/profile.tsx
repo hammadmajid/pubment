@@ -12,7 +12,7 @@ import { commitSession, getSession } from '~/session.server';
 import type { Route } from './+types/profile';
 
 export function meta() {
-  return [{ title: 'Profile | Social Media' }];
+  return [{ title: 'Profile | Pubment' }];
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {

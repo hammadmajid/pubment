@@ -3,7 +3,7 @@ import { getSession } from '~/session.server';
 import type { Route } from './+types/search';
 
 export function meta() {
-  return [{ title: 'Search | Social Media' }];
+  return [{ title: 'Search | Pubment' }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {

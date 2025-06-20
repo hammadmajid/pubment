@@ -34,7 +34,7 @@ const navigationItems = [
   },
   {
     title: 'Profile',
-    url: `/profile/`,
+    url: '/profile/',
     icon: User,
   },
   {
@@ -53,7 +53,7 @@ export function AppSidebar() {
             <SidebarMenuButton size='lg' asChild>
               <NavLink to='/' className='font-semibold'>
                 <GalleryVerticalEnd className='size-4' />
-                <span>SocialApp</span>
+                <span>Pubment</span>
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
