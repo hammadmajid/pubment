@@ -238,3 +238,16 @@ resource "azurerm_linux_virtual_machine" "backend" {
   }
 }
 
+resource "azurerm_dns_zone" "pubment" {
+  name                = "pubment.xyz"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_dns_a_record" "frontend" {
+  name                = "@"
+  zone_name           = azurerm_dns_zone.pubment.name
+  resource_group_name = azurerm_resource_group.main.name
+  ttl                 = 300
+  records             = [azurerm_public_ip.frontend.ip_address]
+}
+

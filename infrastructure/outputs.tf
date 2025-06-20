@@ -43,3 +43,8 @@ output "backend_nsg_name" {
   value       = azurerm_network_security_group.backend.name
 }
 
+output "azure_dns_nameservers" {
+  description = "Azure DNS nameservers for pubment.xyz"
+  value       = azurerm_dns_zone.pubment.name_servers
+}
+
