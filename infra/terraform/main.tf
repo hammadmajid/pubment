@@ -28,58 +28,6 @@ resource "azurerm_subnet" "main" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# Frontend NSG
-resource "azurerm_network_security_group" "frontend" {
-  name                = "frontend-nsg"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-
-  security_rule {
-    name                       = "SSH"
-    priority                   = 1001
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-  security_rule {
-    name                       = "HTTP"
-    priority                   = 1002
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-  security_rule {
-    name                       = "HTTPS"
-    priority                   = 1003
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "443"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-  security_rule {
-    name                       = "AllOutbound"
-    priority                   = 100
-    direction                  = "Outbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-}
-
 # Backend NSG
 resource "azurerm_network_security_group" "backend" {
   name                = "backend-nsg"
@@ -121,20 +69,6 @@ resource "azurerm_network_security_group" "backend" {
   }
 }
 
-# Network interfaces
-resource "azurerm_network_interface" "frontend" {
-  name                = "frontend-nic"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.main.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.frontend.id
-  }
-}
-
 resource "azurerm_network_interface" "backend" {
   name                = "backend-nic"
   location            = azurerm_resource_group.main.location
@@ -148,25 +82,11 @@ resource "azurerm_network_interface" "backend" {
   }
 }
 
-# Public IPs
-resource "azurerm_public_ip" "frontend" {
-  name                = "frontend-pip"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Static"
-}
-
 resource "azurerm_public_ip" "backend" {
   name                = "backend-pip"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   allocation_method   = "Static"
-}
-
-# Associate NSGs
-resource "azurerm_network_interface_security_group_association" "frontend" {
-  network_interface_id      = azurerm_network_interface.frontend.id
-  network_security_group_id = azurerm_network_security_group.frontend.id
 }
 
 resource "azurerm_network_interface_security_group_association" "backend" {
@@ -178,35 +98,6 @@ resource "azurerm_network_interface_security_group_association" "backend" {
 variable "admin_ssh_key" {
   description = "SSH public key for admin user"
   type        = string
-}
-
-# Frontend VM
-resource "azurerm_linux_virtual_machine" "frontend" {
-  name                  = "frontend-vm"
-  resource_group_name   = azurerm_resource_group.main.name
-  location              = azurerm_resource_group.main.location
-  size                  = "Standard_B2s_v2"
-  admin_username        = "azureuser"
-  network_interface_ids = [azurerm_network_interface.frontend.id]
-  admin_ssh_key {
-    username   = "azureuser"
-    public_key = var.admin_ssh_key
-  }
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-    name                 = "frontend-osdisk"
-  }
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-focal"
-    sku       = "20_04-lts"
-    version   = "latest"
-  }
-  tags = {
-    Name = "frontend-server"
-    Type = "frontend"
-  }
 }
 
 # Backend VM
@@ -237,17 +128,3 @@ resource "azurerm_linux_virtual_machine" "backend" {
     Type = "backend"
   }
 }
-
-resource "azurerm_dns_zone" "pubment" {
-  name                = "pubment.xyz"
-  resource_group_name = azurerm_resource_group.main.name
-}
-
-resource "azurerm_dns_a_record" "frontend" {
-  name                = "@"
-  zone_name           = azurerm_dns_zone.pubment.name
-  resource_group_name = azurerm_resource_group.main.name
-  ttl                 = 300
-  records             = [azurerm_public_ip.frontend.ip_address]
-}
-
