@@ -1,12 +1,9 @@
 provider "azurerm" {
   features {}
-  subscription_id = "5f342674-c88c-4f61-aec2-be5442731b9e"
-}
-
-variable "location" {
-  description = "Azure region for resources"
-  type        = string
-  default     = "westeurope"
+  subscription_id = var.azure_subscription_id
+  client_id       = var.azure_client_id
+  client_secret   = var.azure_client_secret
+  tenant_id       = var.azure_tenant_id
 }
 
 resource "azurerm_resource_group" "main" {

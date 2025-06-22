@@ -1,8 +1,3 @@
-variable "vercel_api_token" {
-  description = "API token for Vercel team"
-  type        = string
-}
-
 provider "vercel" {
   api_token = var.vercel_api_token
   team      = "bine"
