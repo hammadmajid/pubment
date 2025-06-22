@@ -1,24 +1,30 @@
-output "backend_nsg_id" {
-  description = "ID of the backend network security group"
-  value       = azurerm_network_security_group.backend.id
+output "public_ip_address" {
+  value = azurerm_public_ip.main.ip_address
 }
 
-output "backend_vm_id" {
-  description = "ID of the backend Azure VM"
-  value       = azurerm_linux_virtual_machine.backend.id
+output "mongodb_connection_string" {
+  value = replace(
+    mongodbatlas_cluster.main.connection_strings[0].standard_srv,
+    "mongodb+srv://",
+    "mongodb+srv://${mongodbatlas_database_user.app_user.username}:${random_password.app_password.result}@"
+  )
+  description = "MongoDB connection string for the application"
+  sensitive   = true
 }
 
-output "backend_vm_private_ip" {
-  description = "Private IP address of the backend VM"
-  value       = azurerm_network_interface.backend.private_ip_address
+output "mongodb_cluster_name" {
+  value = mongodbatlas_cluster.main.name
 }
 
-output "backend_vm_public_ip" {
-  description = "Public IP address of the backend VM"
-  value       = azurerm_public_ip.backend.ip_address
+output "mongodb_project_id" {
+  value = mongodbatlas_project.main.id
 }
 
-output "backend_nsg_name" {
-  description = "Name of the backend network security group"
-  value       = azurerm_network_security_group.backend.name
+output "database_username" {
+  value = mongodbatlas_database_user.app_user.username
+}
+
+output "database_password" {
+  value     = random_password.app_password.result
+  sensitive = true
 }
