@@ -153,3 +153,4 @@ apps/client/.react-router/
 *.tfplan.*
 .terraformrc
 terraform.rc
+infra/ansible/group_vars/all.yml
