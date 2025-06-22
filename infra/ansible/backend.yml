@@ -5,8 +5,14 @@
   vars:
     app_user: azureuser
     app_dir: /opt/pubment
-    node_version: "20"
+    container_name: pubment-backend
+    image_name: pubment-server
   tasks:
+    - name: Add GPG key for libcontainers (Podman) repo
+      apt_key:
+        url: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/Release.key
+        state: present
+
     - name: Update apt cache and upgrade
       apt:
         update_cache: yes
@@ -19,6 +25,7 @@
           - git
           - build-essential
           - ufw
+          - podman
         state: present
 
     - name: Install Caddy
@@ -29,40 +36,6 @@
         apt install caddy -y
       args:
         creates: /usr/bin/caddy
-
-    - name: Install Node.js {{ node_version }}
-      shell: |
-        curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | sudo -E bash -
-        apt-get install -y nodejs
-      args:
-        creates: /usr/bin/node
-
-    - name: Install pnpm globally
-      npm:
-        name: pnpm
-        global: yes
-
-    - name: Install turbo globally
-      npm:
-        name: turbo
-        global: yes
-
-    - name: Set up pnpm directories for azureuser
-      file:
-        path: "/home/azureuser/.local/share/pnpm"
-        state: directory
-        owner: azureuser
-        group: azureuser
-        mode: '0755'
-        recurse: yes
-
-    - name: Set up pnpm config directory for azureuser
-      file:
-        path: "/home/azureuser/.config/pnpm"
-        state: directory
-        owner: azureuser
-        group: azureuser
-        mode: '0755'
 
     - name: Create application directory
       file:
@@ -95,33 +68,26 @@
         group: "{{ app_user }}"
         mode: '0600'
 
-    - name: Install dependencies
-      shell: pnpm install
+    - name: Stop and remove existing container
+      shell: podman stop {{ container_name }} && podman rm {{ container_name }} || true
+      become_user: "{{ app_user }}"
+      ignore_errors: yes
+
+    - name: Build image
+      shell: podman build -t {{ image_name }} -f apps/server/Dockerfile .
       args:
         chdir: "{{ app_dir }}/app"
       become_user: "{{ app_user }}"
 
-    - name: Build the application
-      shell: turbo run build --filter=server...
-      args:
-        chdir: "{{ app_dir }}/app"
+    - name: Run container in detached mode
+      shell: |
+        podman run -d \
+          --name {{ container_name }} \
+          --env-file {{ app_dir }}/app/.env \
+          -p 3000:3000 \
+          --restart=always \
+          {{ image_name }}
       become_user: "{{ app_user }}"
-
-    - name: Create systemd service file
-      template:
-        src: templates/app.service.j2
-        dest: /etc/systemd/system/pubment.service
-        mode: '0644'
-      notify:
-        - reload systemd
-        - restart pubment
-
-    - name: Enable and start pubment service
-      systemd:
-        name: pubment
-        enabled: yes
-        state: started
-        daemon_reload: yes
 
     - name: Configure UFW - allow SSH
       ufw:
@@ -172,11 +138,6 @@
       notify:
         - restart caddy
 
-    - name: Validate Caddy configuration
-      command: caddy validate --config /etc/caddy/Caddyfile
-      register: caddy_validate
-      failed_when: caddy_validate.rc != 0
-
     - name: Enable and start Caddy service
       systemd:
         name: caddy
@@ -185,15 +146,6 @@
         daemon_reload: yes
 
   handlers:
-    - name: reload systemd
-      systemd:
-        daemon_reload: yes
-
-    - name: restart pubment
-      systemd:
-        name: pubment
-        state: restarted
-
     - name: restart caddy
       systemd:
         name: caddy
