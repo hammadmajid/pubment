@@ -144,7 +144,7 @@ resource "local_file" "ansible_vars" {
     mongodb_uri = replace(
       mongodbatlas_cluster.main.connection_strings[0].standard_srv,
       "mongodb+srv://",
-      "mongodb+srv://${mongodbatlas_database_user.app_user.username}:${random_password.app_password.result}@"
+      "mongodb+srv://${mongodbatlas_database_user.app_user.username}:${urlencode(random_password.app_password.result)}@"
     )
     jwt_secret = var.jwt_secret
   })

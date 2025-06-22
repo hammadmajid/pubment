@@ -12,40 +12,26 @@ class DatabaseConnection {
       }
 
       const uri = this.getMongoUri();
-
       const options = {
-        ssl: config.isProduction,
+        ssl: true, // Always true for Atlas
         retryWrites: true,
         writeConcern: {
           w: 'majority' as const,
         },
-        // Additional Mongoose-specific options
-        maxPoolSize: 10, // Maintain up to 10 socket connections
-        serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-        bufferCommands: false, // Disable mongoose buffering
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 30000,
+        socketTimeoutMS: 45000,
+        bufferCommands: false,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        family: 4, // Force IPv4
+        dbname: 'pubment',
       };
 
+      console.log('Attempting to connect to MongoDB...');
       await mongoose.connect(uri, options);
-
       this.isConnected = true;
       console.log('Connected to MongoDB successfully with Mongoose');
-
-      // Handle connection events
-      mongoose.connection.on('error', (error) => {
-        console.error('MongoDB connection error:', error);
-        this.isConnected = false;
-      });
-
-      mongoose.connection.on('disconnected', () => {
-        console.log('MongoDB disconnected');
-        this.isConnected = false;
-      });
-
-      mongoose.connection.on('reconnected', () => {
-        console.log('MongoDB reconnected');
-        this.isConnected = true;
-      });
     } catch (error) {
       console.error('MongoDB connection error:', error);
       this.isConnected = false;
