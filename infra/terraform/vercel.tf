@@ -17,7 +17,7 @@ resource "vercel_project" "pubment" {
 resource "vercel_project_environment_variable" "pubment" {
   project_id = vercel_project.pubment.id
   key        = "API_BASE_URL"
-  value      = "http://${azurerm_public_ip.main.ip_address}:3000"
+  value      = "https://api.pubment.xyz"
   target     = ["production", "preview", "development"]
 }
 

@@ -18,9 +18,17 @@
           - curl
           - git
           - build-essential
-          - nginx
           - ufw
         state: present
+
+    - name: Install Caddy
+      shell: |
+        curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+        curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+        apt update
+        apt install caddy -y
+      args:
+        creates: /usr/bin/caddy
 
     - name: Install Node.js {{ node_version }}
       shell: |
@@ -108,7 +116,7 @@
         port: 443
         proto: tcp
 
-    - name: Configure UFW - allow internal traffic on port 3000
+    - name: Configure UFW - allow traffic on port 3000
       ufw:
         rule: allow
         port: 3000
@@ -118,43 +126,34 @@
       ufw:
         state: enabled
 
-    - name: Configure Nginx as reverse proxy
+    - name: Configure Caddy reverse proxy
       copy:
-        dest: /etc/nginx/sites-available/pubment
+        dest: /etc/caddy/Caddyfile
         content: |
-          server {
-              listen 80;
-              server_name _;
+          api.pubment.xyz {
+              reverse_proxy localhost:3000
 
-              location / {
-                  proxy_pass http://localhost:3000;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection 'upgrade';
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $scheme;
-                  proxy_cache_bypass $http_upgrade;
+              # Enable CORS headers
+              header {
+                  Access-Control-Allow-Origin "https://pubment.xyz"
+                  Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+                  Access-Control-Allow-Headers "Content-Type, Authorization"
+                  Access-Control-Allow-Credentials "true"
               }
+
+              # Handle preflight requests
+              @options method OPTIONS
+              respond @options 200
           }
       notify:
-        - restart nginx
+        - restart caddy
 
-    - name: Enable Nginx site
-      file:
-        src: /etc/nginx/sites-available/pubment
-        dest: /etc/nginx/sites-enabled/pubment
-        state: link
-      notify:
-        - restart nginx
-
-    - name: Remove default Nginx site
-      file:
-        path: /etc/nginx/sites-enabled/default
-        state: absent
-      notify:
-        - restart nginx
+    - name: Enable and start Caddy service
+      systemd:
+        name: caddy
+        enabled: yes
+        state: started
+        daemon_reload: yes
 
   handlers:
     - name: reload systemd
@@ -166,7 +165,7 @@
         name: pubment
         state: restarted
 
-    - name: restart nginx
+    - name: restart caddy
       systemd:
-        name: nginx
+        name: caddy
         state: restarted
