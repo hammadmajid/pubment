@@ -23,25 +23,5 @@
     "sensitive": false,
     "type": "string",
     "value": "4.210.163.239"
-  },
-  "frontend_nsg_id": {
-    "sensitive": false,
-    "type": "string",
-    "value": "/subscriptions/5f342674-c88c-4f61-aec2-be5442731b9e/resourceGroups/pubment-rg/providers/Microsoft.Network/networkSecurityGroups/frontend-nsg"
-  },
-  "frontend_vm_id": {
-    "sensitive": false,
-    "type": "string",
-    "value": "/subscriptions/5f342674-c88c-4f61-aec2-be5442731b9e/resourceGroups/pubment-rg/providers/Microsoft.Compute/virtualMachines/frontend-vm"
-  },
-  "frontend_vm_private_ip": {
-    "sensitive": false,
-    "type": "string",
-    "value": "10.0.1.4"
-  },
-  "frontend_vm_public_ip": {
-    "sensitive": false,
-    "type": "string",
-    "value": "51.136.90.132"
   }
 }
