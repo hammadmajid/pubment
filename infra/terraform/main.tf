@@ -107,3 +107,22 @@ resource "azurerm_linux_virtual_machine" "main" {
     version   = "latest"
   }
 }
+
+resource "local_file" "ansible_inventory" {
+  content = templatefile("${path.module}/../ansible/inventory.tpl", {
+    backend_ip = azurerm_public_ip.main.ip_address
+  })
+  filename = "${path.module}/../ansible/inventory.ini"
+}
+
+resource "local_file" "ansible_vars" {
+  content = templatefile("${path.module}/../ansible/ansible_vars.tpl", {
+    mongodb_uri = replace(
+      mongodbatlas_cluster.main.connection_strings[0].standard_srv,
+      "mongodb+srv://",
+      "mongodb+srv://${mongodbatlas_database_user.app_user.username}:${random_password.app_password.result}@"
+    )
+    jwt_secret = var.jwt_secret
+  })
+  filename = "${path.module}/../ansible/group_vars/all.yml"
+}

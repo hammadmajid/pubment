@@ -53,3 +53,9 @@ variable "atlas_org_id" {
   description = "MongoDB Atlas organization ID"
   type        = string
 }
+
+# Ansible
+variable "jwt_secret" {
+  description = "JWT secret for session authentication in app"
+  type = string
+}
