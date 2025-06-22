@@ -47,6 +47,23 @@
         name: turbo
         global: yes
 
+    - name: Set up pnpm directories for azureuser
+      file:
+        path: "/home/azureuser/.local/share/pnpm"
+        state: directory
+        owner: azureuser
+        group: azureuser
+        mode: '0755'
+        recurse: yes
+
+    - name: Set up pnpm config directory for azureuser
+      file:
+        path: "/home/azureuser/.config/pnpm"
+        state: directory
+        owner: azureuser
+        group: azureuser
+        mode: '0755'
+
     - name: Create application directory
       file:
         path: "{{ app_dir }}"
@@ -62,6 +79,13 @@
         version: main
         force: yes
       become_user: "{{ app_user }}"
+
+    - name: Set ownership of application directory
+      file:
+        path: "{{ app_dir }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        recurse: yes
 
     - name: Create .env file from template
       template:
@@ -116,7 +140,7 @@
         port: 443
         proto: tcp
 
-    - name: Configure UFW - allow traffic on port 3000
+    - name: Configure UFW - allow internal traffic on port 3000
       ufw:
         rule: allow
         port: 3000
@@ -147,6 +171,11 @@
           }
       notify:
         - restart caddy
+
+    - name: Validate Caddy configuration
+      command: caddy validate --config /etc/caddy/Caddyfile
+      register: caddy_validate
+      failed_when: caddy_validate.rc != 0
 
     - name: Enable and start Caddy service
       systemd:
