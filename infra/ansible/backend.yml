@@ -1,87 +1,172 @@
 - hosts: backend
   become: yes
   vars_files:
-    - vault.yml
+    - group_vars/all.yml
+  vars:
+    app_user: azureuser
+    app_dir: /opt/pubment
+    node_version: "20"
   tasks:
     - name: Update apt cache and upgrade
-      apt: update_cache=yes upgrade=dist
+      apt:
+        update_cache: yes
+        upgrade: dist
 
-    - name: Install required packages for Docker
+    - name: Install required packages
       apt:
         name:
-          - apt-transport-https
-          - ca-certificates
           - curl
-          - software-properties-common
+          - git
+          - build-essential
+          - nginx
+          - ufw
         state: present
 
-    - name: Add Docker GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
+    - name: Install Node.js {{ node_version }}
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | sudo -E bash -
+        apt-get install -y nodejs
+      args:
+        creates: /usr/bin/node
 
-    - name: Add Docker repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
-        state: present
+    - name: Install pnpm globally
+      npm:
+        name: pnpm
+        global: yes
 
-    - name: Install Docker and Docker Compose
-      apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-compose-plugin
-        state: present
+    - name: Install turbo globally
+      npm:
+        name: turbo
+        global: yes
 
-    - name: Add ubuntu user to docker group
-      user:
-        name: ubuntu
-        groups: docker
-        append: yes
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
 
     - name: Clone repository
       git:
         repo: 'https://github.com/hammadmajid/pubment.git'
-        dest: /opt/pubment
+        dest: "{{ app_dir }}/app"
         version: main
+        force: yes
+      become_user: "{{ app_user }}"
 
-    - name: Create backend .env
-      copy:
-        dest: /opt/pubment/.env
-        content: |
-          MONGODB_URI={{ MONGODB_URI }}
-          JWT_SECRET={{ JWT_SECRET }}
-          CORS_ORIGIN=https://pubment.xyz
-        owner: ubuntu
-        group: ubuntu
+    - name: Create .env file from template
+      template:
+        src: templates/env.j2
+        dest: "{{ app_dir }}/app/.env"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
         mode: '0600'
 
-    - name: Build server Docker image
-      shell: docker build --file apps/server/Dockerfile -t pubment-server .
+    - name: Install dependencies
+      shell: pnpm install
       args:
-        chdir: /opt/pubment
+        chdir: "{{ app_dir }}/app"
+      become_user: "{{ app_user }}"
 
-    - name: Run server container
-      docker_container:
-        name: pubment-server
-        image: pubment-server
-        restart_policy: always
-        env_file: /opt/pubment/.env
-        ports:
-          - "3000:3000"
+    - name: Build the application
+      shell: turbo run build --filter=server...
+      args:
+        chdir: "{{ app_dir }}/app"
+      become_user: "{{ app_user }}"
+
+    - name: Create systemd service file
+      template:
+        src: templates/app.service.j2
+        dest: /etc/systemd/system/pubment.service
+        mode: '0644'
+      notify:
+        - reload systemd
+        - restart pubment
+
+    - name: Enable and start pubment service
+      systemd:
+        name: pubment
+        enabled: yes
         state: started
+        daemon_reload: yes
 
-    - name: Allow only internal traffic on port 3000
+    - name: Configure UFW - allow SSH
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Configure UFW - allow HTTP
+      ufw:
+        rule: allow
+        port: 80
+        proto: tcp
+
+    - name: Configure UFW - allow HTTPS
+      ufw:
+        rule: allow
+        port: 443
+        proto: tcp
+
+    - name: Configure UFW - allow internal traffic on port 3000
       ufw:
         rule: allow
         port: 3000
         proto: tcp
-        from_ip: 10.0.0.0/8
-      notify: reload ufw
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    - name: Configure Nginx as reverse proxy
+      copy:
+        dest: /etc/nginx/sites-available/pubment
+        content: |
+          server {
+              listen 80;
+              server_name _;
+
+              location / {
+                  proxy_pass http://localhost:3000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_cache_bypass $http_upgrade;
+              }
+          }
+      notify:
+        - restart nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/pubment
+        dest: /etc/nginx/sites-enabled/pubment
+        state: link
+      notify:
+        - restart nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify:
+        - restart nginx
 
   handlers:
-    - name: reload ufw
-      service:
-        name: ufw
+    - name: reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: restart pubment
+      systemd:
+        name: pubment
+        state: restarted
+
+    - name: restart nginx
+      systemd:
+        name: nginx
         state: restarted
