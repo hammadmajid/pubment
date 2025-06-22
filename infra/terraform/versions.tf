@@ -10,6 +10,10 @@ terraform {
       source  = "vercel/vercel"
       version = "~> 2.0"
     }
+    mongodbatlas = {
+      source  = "mongodb/mongodbatlas"
+      version = "1.36.0"
+    }
   }
 }
 
