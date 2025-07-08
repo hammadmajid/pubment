@@ -1,4 +1,4 @@
-# Pubment
+# Social Media Platform - CodeAlpha Internship Task 2
 
 A minimal, full-stack social media app. Features include user registration, following, posting, liking, and commenting. Built with a modern monorepo stack and ready for cloud deployment.
 
