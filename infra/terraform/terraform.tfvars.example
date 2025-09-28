@@ -1,0 +1,22 @@
+# Azure Configuration
+azure_subscription_id = "your-azure-subscription-id-here"
+azure_client_id       = "your-service-principal-client-id-here"
+azure_client_secret   = "your-service-principal-client-secret-here"
+azure_tenant_id       = "your-azure-tenant-id-here"
+
+# SSH Configuration
+admin_ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ... your-public-ssh-key-here"
+
+# Azure Region (optional - defaults to westeurope)
+location = "westeurope"
+
+# Vercel Configuration
+vercel_api_token = "your-vercel-api-token-here"
+
+# MongoDB Atlas Configuration
+mongodbatlas_public_key  = "your-mongodb-atlas-public-key-here"
+mongodbatlas_private_key = "your-mongodb-atlas-private-key-here"
+atlas_org_id            = "your-mongodb-atlas-org-id-here"
+
+# Application Configuration
+jwt_secret = "your-super-secret-jwt-key-for-production-here"
